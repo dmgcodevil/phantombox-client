@@ -1,16 +1,21 @@
+target
+out
+.gradle
 *.class
 
-# Package Files #
-*.war
-*.ear
-/*.iml
-/*.ipr
-/*.iws
-/.gradle
-/build
-/out
-/bin
-/.settings
-/*.classpath
-/*.project
-/setup.xml
+# IntelliJ project files 
+*.iml
+*.iws
+*.ipr
+.idea
+=======
+
+# eclipse project file
+.pmd
+.ruleset
+.settings
+.classpath
+.project
+build
+test-output
+.springBeans
