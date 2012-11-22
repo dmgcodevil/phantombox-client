@@ -1,0 +1,16 @@
+*.class
+
+# Package Files #
+*.war
+*.ear
+/*.iml
+/*.ipr
+/*.iws
+/.gradle
+/build
+/out
+/bin
+/.settings
+/*.classpath
+/*.project
+/setup.xml
