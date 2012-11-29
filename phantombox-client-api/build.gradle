@@ -1,0 +1,16 @@
+task loadProperties << {
+    def userProps = new Properties()
+    userProps.load(new FileInputStream("$rootProject.projectDir/gradle.properties"))
+    properties.putAll(userProps)
+}
+
+task printProperties(dependsOn: 'loadProperties') << {
+    println commonsCollectionsVersion
+}
+
+compileJava.dependsOn('loadProperties')
+
+dependencies {
+
+    compile('javax.media:jmf:2.1.1e')
+}

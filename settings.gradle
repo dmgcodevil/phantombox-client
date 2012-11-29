@@ -1,0 +1,5 @@
+rootProject.name='phantombox-client'
+
+include 'phantombox-client-api'
+include 'phantombox-client-impl'
+include 'phantombox-client-ui'
