@@ -1,5 +1,6 @@
 rootProject.name='phantombox-client'
 
 include 'phantombox-client-api'
-include 'phantombox-client-impl'
+include 'phantombox-client-domain'
+include 'phantombox-client-webcam'
 include 'phantombox-client-ui'
