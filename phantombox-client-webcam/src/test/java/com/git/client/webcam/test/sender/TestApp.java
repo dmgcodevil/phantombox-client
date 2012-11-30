@@ -11,6 +11,8 @@ import com.git.client.webcam.device.DeviceManager;
 import com.git.client.webcam.locator.MediaLocatorFactory;
 import com.git.client.webcam.processor.ProcessorFactory;
 import com.git.client.webcam.transmitter.TransmitterFactoryDataSink;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class description.
@@ -23,6 +25,7 @@ public class TestApp {
 
     public static final String VFM_WDM = "vfw:Microsoft WDM Image Capture (Win32):0";
     public static final String DSC = "DirectSoundCapture";
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestApp.class);
 
     public static void main(String[] args) {
         SenderBuilder senderBuilder = new SenderBuilder();
@@ -41,7 +44,9 @@ public class TestApp {
         senderBuilder.buildTransmitterFactory(transmitterFactory);
         ISender videoSender = senderBuilder.getSender();
         videoSender.start(TransmissionType.VIDEO, VFM_WDM, "224.123.111.101", 22224);
+        LOGGER.info("-------- START VIDEO BROADCAST --------");
         ISender audioSender = senderBuilder.getSender();
         audioSender.start(TransmissionType.AUDIO, DSC, "224.123.111.101", 22225);
+        LOGGER.info("-------- START AUDIO BROADCAST --------");
     }
 }
