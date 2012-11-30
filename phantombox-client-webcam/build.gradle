@@ -1,0 +1,7 @@
+dependencies {
+    compile project(':phantombox-client-api')
+    compile project(':phantombox-client-domain')
+
+    compile('org.slf4j:slf4j-simple:1.6.4')
+    compile('org.slf4j:slf4j-api:1.6.4')
+}

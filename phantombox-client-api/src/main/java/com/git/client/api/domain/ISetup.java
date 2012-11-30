@@ -43,28 +43,28 @@ public interface ISetup {
     /**
      * Gets audio device.
      *
-     * @return {@link IDevice}
+     * @return {@link IAudioDevice}
      */
-    IDevice getAudioDevice();
+    IAudioDevice getAudioDevice();
 
     /**
      * Sets audio device.
      *
-     * @param audioDevice {@link IDevice}
+     * @param audioDevice {@link IAudioDevice}
      */
-    void setAudioDevice(IDevice audioDevice);
+    void setAudioDevice(IAudioDevice audioDevice);
 
     /**
      * Get video device.
      *
-     * @return {@link IDevice}
+     * @return {@link IVideoDevice}
      */
-    IDevice getVideoDevice();
+    IVideoDevice getVideoDevice();
 
     /**
      * Set video device.
      *
-     * @param videoDevice {@link IDevice}
+     * @param videoDevice {@link IVideoDevice}
      */
-    void setVideoDevice(IDevice videoDevice);
+    void setVideoDevice(IVideoDevice videoDevice);
 }

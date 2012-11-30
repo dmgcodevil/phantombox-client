@@ -1,0 +1,19 @@
+task loadProperties << {
+    def userProps = new Properties()
+    userProps.load(new FileInputStream("$rootProject.projectDir/gradle.properties"))
+    properties.putAll(userProps)
+}
+
+task printProperties(dependsOn: 'loadProperties') << {
+    println commonsCollectionsVersion
+}
+
+compileJava.dependsOn('loadProperties')
+
+dependencies {
+
+    compile project(':phantombox-client-api')
+    compile("commons-collections:commons-collections:${commonsCollectionsVersion}")
+    compile("org.apache.commons:commons-lang3:${commonsLang3}")
+    compile('commons-lang:commons-lang:2.3')
+}
