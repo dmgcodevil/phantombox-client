@@ -12,5 +12,6 @@ compileJava.dependsOn('loadProperties')
 
 dependencies {
 
+    compile('com.git.phantombox:phantombox-domain-api:1.0.0')
     compile('javax.media:jmf:2.1.1e')
 }

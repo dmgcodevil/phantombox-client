@@ -1,0 +1,23 @@
+dependencies {
+
+    /* ---------------- phantombox dependencies ---------------- */
+    compile('com.git.phantombox:phantombox-domain-api:1.0.0')
+    compile('com.git.phantombox:phantombox-domain-impl:1.0.0')
+    compile('com.git.phantombox:phantombox-domain-util:1.0.0')
+    compile('com.git.phantombox:phantombox-broker-api:1.0.0')
+    compile('com.git.phantombox:phantombox-broker-impl:1.0.0')
+    compile('com.git.phantombox:phantombox-server-rest-api:1.0.0')
+    compile('com.git.phantombox:phantombox-server-rest-call:1.0.0')
+    compile project(':phantombox-client-api')
+
+    /* ---------------- spring dependencies ---------------- */
+
+    compile('org.springframework:spring-beans:3.1.2.RELEASE')
+    compile('org.springframework:spring-context:3.1.2.RELEASE')
+    compile('org.springframework:spring-core:3.1.2.RELEASE')
+
+    /* ---------------- test dependencies ---------------- */
+    compile('junit:junit:4.8.2')
+
+}
+            
