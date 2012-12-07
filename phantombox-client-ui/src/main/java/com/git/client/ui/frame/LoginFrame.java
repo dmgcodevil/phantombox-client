@@ -1,6 +1,6 @@
 package com.git.client.ui.frame;
 
-import com.git.client.ui.UiMediator;
+import com.git.client.ui.Mediator;
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
@@ -24,7 +24,8 @@ public class LoginFrame extends JFrame {
     private JTextField loginField;
     private JPasswordField passwordField;
     private JButton btnLogin;
-    private UiMediator uiMediator;
+    private JButton btnClose;
+    private Mediator mediator;
 
     /**
      * Create the frame.
@@ -72,13 +73,13 @@ public class LoginFrame extends JFrame {
         btnLogin = new JButton("Login");
         contentPane.add(btnLogin, "4, 8");
 
-        JButton btnNewButton_1 = new JButton("Close");
-        contentPane.add(btnNewButton_1, "6, 8");
+        btnClose = new JButton("Close");
+        contentPane.add(btnClose, "6, 8");
     }
 
-    public LoginFrame(UiMediator uiMediator) throws HeadlessException {
+    public LoginFrame(Mediator mediator) throws HeadlessException {
         this();
-        this.uiMediator = uiMediator;
+        this.mediator = mediator;
         addListeners();
     }
 
@@ -87,7 +88,15 @@ public class LoginFrame extends JFrame {
         btnLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                uiMediator.login(loginField.getText(), passwordField.getText());
+                mediator.login(loginField.getText(), passwordField.getText());
+                dispose();
+            }
+        });
+
+        btnClose.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
             }
         });
     }

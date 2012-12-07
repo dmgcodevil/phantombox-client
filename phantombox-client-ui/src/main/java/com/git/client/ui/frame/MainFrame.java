@@ -1,6 +1,6 @@
 package com.git.client.ui.frame;
 
-import com.git.client.ui.UiMediator;
+import com.git.client.ui.Mediator;
 import com.git.client.ui.panel.JContact;
 import com.git.domain.api.IContact;
 import com.jgoodies.forms.factories.FormFactory;
@@ -10,12 +10,10 @@ import com.jgoodies.forms.layout.RowSpec;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
-import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
@@ -37,13 +35,16 @@ import javax.swing.border.EmptyBorder;
  */
 public class MainFrame extends JFrame {
 
+    public static final String ADD_NEW_CONTACT = "Add new contact";
+    public static final String LOGIN = "Login";
+    private JMenuBar menuBar;
     private JPanel contentPane;
-
-    private DefaultListModel model;
     private JPanel contactPanel;
+    private JPanel contactsPanel;
     private JScrollPane scrollContacts;
     private JMenuItem mntmLogin;
-    private UiMediator uiMediator;
+    private JMenuItem mntmAddContact;
+    private Mediator mediator;
 
 
     /**
@@ -69,24 +70,17 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 243, 521);
 
-        JMenuBar menuBar = new JMenuBar();
+        menuBar = new JMenuBar();
         setJMenuBar(menuBar);
 
         JMenu mnChat = new JMenu("PBox");
         menuBar.add(mnChat);
 
-        mntmLogin = new JMenuItem("Login");
-
+        mntmLogin = new JMenuItem(LOGIN);
         mnChat.add(mntmLogin);
 
-        JMenuItem mntmAddcontact = new JMenuItem("Add new contact");
-        mntmAddcontact.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                AddContactFrame addContactFrame = new AddContactFrame();
-                addContactFrame.setVisible(true);
-            }
-        });
-        mnChat.add(mntmAddcontact);
+        mntmAddContact = new JMenuItem(ADD_NEW_CONTACT);
+        mnChat.add(mntmAddContact);
 
         JMenuItem mntmExit = new JMenuItem("Exit");
         mntmExit.addActionListener(new ActionListener() {
@@ -106,6 +100,7 @@ public class MainFrame extends JFrame {
                 //frame.setVisible(true);
             }
         });
+
         mnTools.add(mntmSettings);
 
         JMenu mnAbout = new JMenu("About");
@@ -115,9 +110,9 @@ public class MainFrame extends JFrame {
         setContentPane(contentPane);
         contentPane.setLayout(new BorderLayout(0, 0));
 
-        JPanel contatsPanel = new JPanel();
-        contentPane.add(contatsPanel, BorderLayout.CENTER);
-        contatsPanel.setLayout(new FormLayout(new ColumnSpec[]{
+        contactsPanel = new JPanel();
+        contentPane.add(contactsPanel, BorderLayout.CENTER);
+        contactsPanel.setLayout(new FormLayout(new ColumnSpec[]{
             FormFactory.RELATED_GAP_COLSPEC,
             ColumnSpec.decode("default:grow"),},
             new RowSpec[]{
@@ -131,14 +126,14 @@ public class MainFrame extends JFrame {
         scrollContacts.setViewportView(contactPanel);
         contactPanel.setLayout(new GridLayout(1, 1, 0, 0));
 
-        contatsPanel.add(scrollContacts, "2, 2, fill, fill");
+        contactsPanel.add(scrollContacts, "2, 2, fill, fill");
 
         //init();
     }
 
-    public MainFrame(UiMediator uiMediator) throws HeadlessException {
+    public MainFrame(Mediator mediator) throws HeadlessException {
         this();
-        this.uiMediator = uiMediator;
+        this.mediator = mediator;
         addListeners();
     }
 
@@ -146,18 +141,29 @@ public class MainFrame extends JFrame {
 
         mntmLogin.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
-                LoginFrame loginFrame = new LoginFrame(uiMediator);
+                LoginFrame loginFrame = new LoginFrame(mediator);
                 loginFrame.setVisible(true);
+            }
+        });
+
+
+        mntmAddContact.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                AddContactFrame addContactFrame = new AddContactFrame(mediator);
+                addContactFrame.setVisible(true);
             }
         });
     }
 
     public void refreshContactsList(Set<IContact> contacts) {
+        //contactPanel = new JPanel();
+        contactPanel.removeAll();
         contactPanel.setLayout(new GridLayout(contacts.size(), 1, 0, 0));
         for (IContact contact : contacts) {
-            contactPanel.add(new JContact(contact));
+            contactPanel.add(new JContact(mediator, contact));
         }
-        revalidate();
-        repaint();
+        //contactPanel.setVisible(true);
+        contactPanel.revalidate();
+        contactPanel.repaint();
     }
 }

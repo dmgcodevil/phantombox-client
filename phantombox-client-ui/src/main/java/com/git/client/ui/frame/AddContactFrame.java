@@ -1,5 +1,6 @@
 package com.git.client.ui.frame;
 
+import com.git.client.ui.Mediator;
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
@@ -7,6 +8,9 @@ import com.jgoodies.forms.layout.RowSpec;
 
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.HeadlessException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import javax.swing.JButton;
@@ -19,10 +23,21 @@ import javax.swing.border.EmptyBorder;
 
 public class AddContactFrame extends JFrame {
 
+
+    public static final String CONTACT_EMAIL = "Contact email";
     private JLabel lblContactName;
-    private JCheckBox chckbxFindByEmail;
+    private JCheckBox chbxFindByEmail;
     private JPanel contentPane;
-    private JTextField textField;
+    private JTextField nameField;
+    private JButton btnAdd;
+    private JButton btnCancel;
+    private Mediator mediator;
+    private static final String ADD = "Add";
+    private static final String CANCEL = "Cancel";
+    private static final String FIND_BY_EMAIL = "find by email";
+    private static final String CONTACT_NAME = "Contact name";
+    private static final String ADD_NEW_CONTACT = "Add new contact";
+
 
     /**
      * Launch the application.
@@ -66,38 +81,65 @@ public class AddContactFrame extends JFrame {
                     FormFactory.RELATED_GAP_ROWSPEC,
                     FormFactory.DEFAULT_ROWSPEC,}));
 
-        JLabel lblAddNewContact = new JLabel("Add new contact");
+        JLabel lblAddNewContact = new JLabel(ADD_NEW_CONTACT);
         lblAddNewContact.setFont(new Font("Arial", Font.BOLD, 12));
         contentPane.add(lblAddNewContact, "2, 2, 5, 1, center, default");
 
-        lblContactName = new JLabel("Contact name");
+        lblContactName = new JLabel(CONTACT_NAME);
         contentPane.add(lblContactName, "2, 4, left, default");
 
-        textField = new JTextField();
-        contentPane.add(textField, "4, 4, 3, 1, fill, default");
-        textField.setColumns(10);
+        nameField = new JTextField();
+        contentPane.add(nameField, "4, 4, 3, 1, fill, default");
+        nameField.setColumns(10);
 
-        chckbxFindByEmail = new JCheckBox("find by email");
+        chbxFindByEmail = new JCheckBox(FIND_BY_EMAIL);
 
-        chckbxFindByEmail.addItemListener(new ItemListener() {
+
+        contentPane.add(chbxFindByEmail, "4, 6, left, default");
+
+        btnAdd = new JButton(ADD);
+        contentPane.add(btnAdd, "4, 8");
+
+        btnCancel = new JButton(CANCEL);
+        contentPane.add(btnCancel, "6, 8");
+    }
+
+    public AddContactFrame(Mediator mediator) throws HeadlessException {
+        this();
+        this.mediator = mediator;
+        addListeners();
+    }
+
+    private void addListeners() {
+        chbxFindByEmail.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent arg0) {
-                if (!chckbxFindByEmail.isSelected()) {
-                    lblContactName.setText("Contact name");
+                if (!chbxFindByEmail.isSelected()) {
+                    lblContactName.setText(CONTACT_NAME);
                 } else {
-                    lblContactName.setText("Contact email");
+                    lblContactName.setText(CONTACT_EMAIL);
                 }
                 revalidate();
                 repaint();
             }
         });
 
-        contentPane.add(chckbxFindByEmail, "4, 6, left, default");
+        btnAdd.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!chbxFindByEmail.isSelected()) {
+                    mediator.addContactByUserName(nameField.getText());
+                } else {
+                    mediator.addContactByContactEmail(nameField.getText());
+                }
+                dispose();
+            }
+        });
 
-        JButton btnNewButton = new JButton("Find");
-        contentPane.add(btnNewButton, "4, 8");
-
-        JButton btnNewButton_1 = new JButton("Cancel");
-        contentPane.add(btnNewButton_1, "6, 8");
+        btnCancel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+            }
+        });
     }
-
 }

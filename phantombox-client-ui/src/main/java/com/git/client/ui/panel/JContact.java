@@ -1,5 +1,6 @@
 package com.git.client.ui.panel;
 
+import com.git.client.ui.Mediator;
 import com.git.domain.api.IContact;
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
@@ -8,9 +9,10 @@ import com.jgoodies.forms.layout.RowSpec;
 
 import java.awt.Component;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -22,14 +24,20 @@ import javax.swing.border.BevelBorder;
 public class JContact extends JPanel {
 
     private JLabel contactName;
+    private JButton btnCall;
+    private JButton btnDel;
+
 
     private IContact contact;
+
+    private Mediator mediator;
 
     public JLabel getContactName() {
         return contactName;
     }
 
-    public void setContactName(JLabel contactName) {
+    public void setContactName(Mediator mediator, JLabel contactName) {
+        this.mediator = mediator;
         this.contactName = contactName;
     }
 
@@ -63,13 +71,13 @@ public class JContact extends JPanel {
         panel.setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 
         java.net.URL callImageURL = JContact.class.getResource("/com/git/client/ui/ico/phone_small.png");
-        JButton btnCall = new JButton(new ImageIcon(callImageURL));
+        btnCall = new JButton(new ImageIcon(callImageURL));
         //btnCall.setBorder(BorderFactory.createEmptyBorder());
         btnCall.setContentAreaFilled(false);
         panel.add(btnCall);
 
         java.net.URL delUserImageURL = JContact.class.getResource("/com/git/client/ui/ico/user_delete_small.png");
-        JButton btnDel = new JButton(new ImageIcon(delUserImageURL));
+        btnDel = new JButton(new ImageIcon(delUserImageURL));
         //btnDel.setBorder(BorderFactory.createEmptyBorder());
         btnDel.setContentAreaFilled(false);
         panel.add(btnDel);
@@ -77,10 +85,22 @@ public class JContact extends JPanel {
 
     }
 
-    public JContact(IContact contact) {
+    public JContact(Mediator mediator, IContact contact) {
         this();
+        this.mediator = mediator;
         this.contact = contact;
         this.contactName.setText(contact.getName());
+        addListeners();
+    }
+
+    private void addListeners() {
+
+        btnDel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mediator.removeContact(contact);
+            }
+        });
     }
 
     private static void addPopup(Component component, final JPopupMenu popup) {

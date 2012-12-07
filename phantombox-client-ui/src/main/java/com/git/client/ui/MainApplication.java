@@ -1,6 +1,5 @@
 package com.git.client.ui;
 
-import com.git.client.ui.frame.LoginFrame;
 import com.git.client.ui.frame.MainFrame;
 
 import org.springframework.context.ApplicationContext;
@@ -25,9 +24,9 @@ public class MainApplication {
                 "/com/git/client/net/spring/phantombox-client-net-context.xml",
                 "/com/git/client/ui/spring/phantombox-client-ui-context.xml"
                 });
-        UiMediator uiMediator = (UiMediator) appContext.getBean("UiMediator");
-        final MainFrame mainFrame = new MainFrame(uiMediator);
-        uiMediator.setMainFrame(mainFrame);
+        Mediator mediator = (Mediator) appContext.getBean("mediator");
+        final MainFrame mainFrame = new MainFrame(mediator);
+        mediator.setMainFrame(mainFrame);
 
         EventQueue.invokeLater(new Runnable() {
             public void run() {
