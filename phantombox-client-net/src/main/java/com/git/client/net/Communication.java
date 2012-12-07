@@ -3,7 +3,17 @@ package com.git.client.net;
 import com.git.client.api.net.ICommunication;
 import com.git.domain.api.IUser;
 import com.git.server.rest.call.RestUserServiceCaller;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * {@link ICommunication} interface implementation.
@@ -17,6 +27,8 @@ public class Communication implements ICommunication {
 
     @Autowired
     private RestUserServiceCaller restUserServiceCaller;
+
+    private static final Logger LOGGER = Logger.getLogger(Communication.class);
 
     /**
      * {@inheritDoc}
@@ -56,5 +68,26 @@ public class Communication implements ICommunication {
     @Override
     public boolean removeContactById(String name, String password, String contactId) {
         return restUserServiceCaller.removeContactById(name, password, contactId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getIpAddress() {
+        String ipAddress = StringUtils.EMPTY;
+        URL remoteUrl = null;
+        BufferedReader in = null;
+        try {
+            remoteUrl = new URL("http://automation.whatismyip.com/n09230945.asp");
+            in = new BufferedReader(new InputStreamReader(remoteUrl.openStream()));
+            ipAddress = in.readLine();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            LOGGER.error(ExceptionUtils.getMessage(e));
+        } catch (IOException e) {
+            LOGGER.error(ExceptionUtils.getMessage(e));
+        }
+        return ipAddress;
     }
 }

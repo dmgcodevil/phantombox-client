@@ -61,4 +61,11 @@ public interface ICommunication {
      * @return true - if operation complete successful
      */
     boolean removeContactById(String name, String password, String contactId);
+
+    /**
+     * Gets ip address.
+     *
+     * @return ip address
+     */
+    String getIpAddress();
 }

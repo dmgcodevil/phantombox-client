@@ -44,8 +44,8 @@ public class AddContactFrame extends JFrame {
      * Create the frame.
      */
     public AddContactFrame() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(100, 100, 318, 171);
+        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        setBounds(100, 100, 335, 171);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);

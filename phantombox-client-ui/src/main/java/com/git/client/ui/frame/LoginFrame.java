@@ -1,12 +1,15 @@
 package com.git.client.ui.frame;
 
+import com.git.client.ui.UiMediator;
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
-import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.HeadlessException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -18,31 +21,17 @@ import javax.swing.border.EmptyBorder;
 public class LoginFrame extends JFrame {
 
     private JPanel contentPane;
-    private JTextField textField;
+    private JTextField loginField;
     private JPasswordField passwordField;
-
-    /**
-     * Launch the application.
-     */
-    public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    LoginFrame frame = new LoginFrame();
-                    frame.setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
+    private JButton btnLogin;
+    private UiMediator uiMediator;
 
     /**
      * Create the frame.
      */
     public LoginFrame() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(100, 100, 286, 170);
+        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        setBounds(100, 100, 355, 170);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
@@ -70,9 +59,9 @@ public class LoginFrame extends JFrame {
         JLabel lblLogin_1 = new JLabel("Login");
         contentPane.add(lblLogin_1, "2, 4, right, default");
 
-        textField = new JTextField();
-        contentPane.add(textField, "4, 4, 3, 1, fill, default");
-        textField.setColumns(10);
+        loginField = new JTextField();
+        contentPane.add(loginField, "4, 4, 3, 1, fill, default");
+        loginField.setColumns(10);
 
         JLabel lblPassword = new JLabel("Password");
         contentPane.add(lblPassword, "2, 6, right, default");
@@ -80,11 +69,26 @@ public class LoginFrame extends JFrame {
         passwordField = new JPasswordField();
         contentPane.add(passwordField, "4, 6, 3, 1, fill, default");
 
-        JButton btnNewButton = new JButton("Login");
-        contentPane.add(btnNewButton, "4, 8");
+        btnLogin = new JButton("Login");
+        contentPane.add(btnLogin, "4, 8");
 
         JButton btnNewButton_1 = new JButton("Close");
         contentPane.add(btnNewButton_1, "6, 8");
     }
 
+    public LoginFrame(UiMediator uiMediator) throws HeadlessException {
+        this();
+        this.uiMediator = uiMediator;
+        addListeners();
+    }
+
+    private void addListeners() {
+
+        btnLogin.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                uiMediator.login(loginField.getText(), passwordField.getText());
+            }
+        });
+    }
 }
