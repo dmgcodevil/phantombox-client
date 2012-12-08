@@ -8,6 +8,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,6 +18,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.border.BevelBorder;
@@ -45,6 +47,7 @@ public class JContact extends JPanel {
      * Create the panel.
      */
     public JContact() {
+        //setPreferredSize(new Dimension(10, 10));
         setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 
         JPopupMenu popupMenu = new JPopupMenu();
@@ -72,13 +75,11 @@ public class JContact extends JPanel {
 
         java.net.URL callImageURL = JContact.class.getResource("/com/git/client/ui/ico/phone_small.png");
         btnCall = new JButton(new ImageIcon(callImageURL));
-        //btnCall.setBorder(BorderFactory.createEmptyBorder());
         btnCall.setContentAreaFilled(false);
         panel.add(btnCall);
 
         java.net.URL delUserImageURL = JContact.class.getResource("/com/git/client/ui/ico/user_delete_small.png");
         btnDel = new JButton(new ImageIcon(delUserImageURL));
-        //btnDel.setBorder(BorderFactory.createEmptyBorder());
         btnDel.setContentAreaFilled(false);
         panel.add(btnDel);
 
@@ -93,12 +94,26 @@ public class JContact extends JPanel {
         addListeners();
     }
 
+    @Override
+    public Dimension getMaximumSize() {
+        return new Dimension(super.getMaximumSize().width, super.getPreferredSize().height);
+    }
+
     private void addListeners() {
 
         btnDel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mediator.removeContact(contact);
+                int answer = JOptionPane.showConfirmDialog(
+                    null,
+                    "Are you sure what you want remove " + contact.getName() + " ?",
+                    "Remove contact",
+                    JOptionPane.YES_NO_OPTION);
+
+                if (JOptionPane.YES_NO_OPTION == answer) {
+                    mediator.removeContact(contact);
+                }
+
             }
         });
     }

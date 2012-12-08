@@ -1,5 +1,6 @@
 package com.git.client.ui.frame;
 
+import com.git.client.exception.UserLoginException;
 import com.git.client.ui.Mediator;
 import com.git.client.ui.panel.JContact;
 import com.git.domain.api.IContact;
@@ -9,21 +10,30 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Set;
+import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.BoxLayout;
+import java.awt.FlowLayout;
+import javax.swing.UIManager;
+import javax.swing.KeyStroke;
+import java.awt.event.KeyEvent;
+import javax.swing.JSeparator;
 
 /**
  * Main frame.
@@ -35,8 +45,6 @@ import javax.swing.border.EmptyBorder;
  */
 public class MainFrame extends JFrame {
 
-    public static final String ADD_NEW_CONTACT = "Add new contact";
-    public static final String LOGIN = "Login";
     private JMenuBar menuBar;
     private JPanel contentPane;
     private JPanel contactPanel;
@@ -45,6 +53,10 @@ public class MainFrame extends JFrame {
     private JMenuItem mntmLogin;
     private JMenuItem mntmAddContact;
     private Mediator mediator;
+    private static final String ADD_NEW_CONTACT = "Add new contact";
+    private static final String LOGIN = "Login";
+    private JMenuItem mntmLogout;
+    private JSeparator separator;
 
 
     /**
@@ -88,6 +100,13 @@ public class MainFrame extends JFrame {
                 dispose();
             }
         });
+
+        mntmLogout = new JMenuItem("Logout");
+
+        mnChat.add(mntmLogout);
+        
+        separator = new JSeparator();
+        mnChat.add(separator);
         mnChat.add(mntmExit);
 
         JMenu mnTools = new JMenu("Tools");
@@ -120,11 +139,13 @@ public class MainFrame extends JFrame {
                 RowSpec.decode("default:grow"),}));
 
         contactPanel = new JPanel();
-
         scrollContacts = new JScrollPane();
+        scrollContacts.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollContacts.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollContacts.setViewportBorder(UIManager.getBorder("ScrollPane.border"));
         scrollContacts.setViewportView(contactPanel);
-        contactPanel.setLayout(new GridLayout(1, 1, 0, 0));
+
+        contactPanel.setLayout(new BoxLayout(contactPanel, BoxLayout.Y_AXIS));
 
         contactsPanel.add(scrollContacts, "2, 2, fill, fill");
 
@@ -153,16 +174,30 @@ public class MainFrame extends JFrame {
                 addContactFrame.setVisible(true);
             }
         });
+
+        mntmLogout.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                try {
+                    mediator.logout();
+                } catch (UserLoginException ex) {
+                    JOptionPane.showMessageDialog(null,
+                        ex.getMessage(),
+                        "Logout",
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
     }
 
     public void refreshContactsList(Set<IContact> contacts) {
-        //contactPanel = new JPanel();
         contactPanel.removeAll();
-        contactPanel.setLayout(new GridLayout(contacts.size(), 1, 0, 0));
+        Box contactsBox = Box.createVerticalBox();
         for (IContact contact : contacts) {
-            contactPanel.add(new JContact(mediator, contact));
+            JContact jContact = new JContact(mediator, contact);
+            contactsBox.add(jContact);
         }
-        //contactPanel.setVisible(true);
+        contactsBox.add(Box.createVerticalGlue());
+        contactPanel.add(contactsBox);
         contactPanel.revalidate();
         contactPanel.repaint();
     }

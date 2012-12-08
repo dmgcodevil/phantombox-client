@@ -1,5 +1,6 @@
 package com.git.client.api.net;
 
+import com.git.domain.api.IContact;
 import com.git.domain.api.IUser;
 
 /**
@@ -34,12 +35,12 @@ public interface ICommunication {
     /**
      * Add contact by user name.
      *
-     * @param name     name
-     * @param password password
-     * @param userName name  of user which need to add
+     * @param name        name
+     * @param password    password
+     * @param contactName name  of contact which need to add
      * @return {@link IUser}
      */
-    IUser addContactByUserName(String name, String password, String userName);
+    IUser addContactByName(String name, String password, String contactName);
 
 
     /**
@@ -50,7 +51,7 @@ public interface ICommunication {
      * @param email    Email
      * @return {@link IUser}
      */
-    IUser addContactByContactEmail(String name, String password, String email);
+    IUser addContactByEmail(String name, String password, String email);
 
     /**
      * Remove contact by id.
@@ -61,6 +62,22 @@ public interface ICommunication {
      * @return true - if operation complete successful
      */
     boolean removeContactById(String name, String password, String contactId);
+
+    /**
+     * Find contact by name.
+     *
+     * @param name contact name
+     * @return {@link IContact}
+     */
+    IContact findContactByName(String name);
+
+    /**
+     * Find contact by email.
+     *
+     * @param email contact email
+     * @return {@link IContact}
+     */
+    IContact findContactByEmail(String email);
 
     /**
      * Gets ip address.

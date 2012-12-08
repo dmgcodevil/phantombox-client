@@ -1,7 +1,9 @@
 package com.git.client.net;
 
 import com.git.client.api.net.ICommunication;
+import com.git.domain.api.IContact;
 import com.git.domain.api.IUser;
+import com.git.server.rest.call.RestContactServiceCaller;
 import com.git.server.rest.call.RestUserServiceCaller;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -28,6 +30,9 @@ public class Communication implements ICommunication {
     @Autowired
     private RestUserServiceCaller restUserServiceCaller;
 
+    @Autowired
+    private RestContactServiceCaller restContactServiceCaller;
+
     private static final Logger LOGGER = Logger.getLogger(Communication.class);
 
     /**
@@ -50,15 +55,15 @@ public class Communication implements ICommunication {
      * {@inheritDoc}
      */
     @Override
-    public IUser addContactByUserName(String name, String password, String userName) {
-        return restUserServiceCaller.addContactByUserName(name, password, userName);
+    public IUser addContactByName(String name, String password, String userName) {
+        return restUserServiceCaller.addContactByName(name, password, userName);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public IUser addContactByContactEmail(String name, String password, String email) {
+    public IUser addContactByEmail(String name, String password, String email) {
         return restUserServiceCaller.addContactByContactEmail(name, password, email);
     }
 
@@ -68,6 +73,16 @@ public class Communication implements ICommunication {
     @Override
     public boolean removeContactById(String name, String password, String contactId) {
         return restUserServiceCaller.removeContactById(name, password, contactId);
+    }
+
+    @Override
+    public IContact findContactByName(String name) {
+        return restContactServiceCaller.findContactByName(name);
+    }
+
+    @Override
+    public IContact findContactByEmail(String email) {
+        return restContactServiceCaller.findContactByEmail(email);
     }
 
     /**

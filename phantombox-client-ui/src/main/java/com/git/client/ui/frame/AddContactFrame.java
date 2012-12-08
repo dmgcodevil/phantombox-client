@@ -1,6 +1,9 @@
 package com.git.client.ui.frame;
 
+import com.git.client.exception.ContactException;
+import com.git.client.exception.UserLoginException;
 import com.git.client.ui.Mediator;
+import com.git.domain.api.IContact;
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
@@ -17,6 +20,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
@@ -126,12 +130,21 @@ public class AddContactFrame extends JFrame {
         btnAdd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!chbxFindByEmail.isSelected()) {
-                    mediator.addContactByUserName(nameField.getText());
-                } else {
-                    mediator.addContactByContactEmail(nameField.getText());
+                try {
+                    if (!chbxFindByEmail.isSelected()) {
+                        IContact contact = mediator.addContactByName(nameField.getText());
+                        showAndClose(contact.getName());
+                    } else {
+                        IContact contact = mediator.addContactByEmail(nameField.getText());
+                        showAndClose(contact.getName());
+                    }
+                } catch (UserLoginException | ContactException ex) {
+                    JOptionPane.showMessageDialog(null,
+                        ex.getMessage(),
+                        "Add contact",
+                        JOptionPane.ERROR_MESSAGE);
                 }
-                dispose();
+
             }
         });
 
@@ -141,5 +154,11 @@ public class AddContactFrame extends JFrame {
                 dispose();
             }
         });
+    }
+
+    private void showAndClose(String contactName) {
+        String msg = String.format("Contact '%s' was added.", contactName);
+        JOptionPane.showMessageDialog(null, msg);
+        dispose();
     }
 }

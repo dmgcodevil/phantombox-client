@@ -1,12 +1,17 @@
 package com.git.client.ui;
 
 import com.git.client.api.net.ICommunication;
+import com.git.client.exception.ContactException;
+import com.git.client.exception.UserLoginException;
 import com.git.client.ui.frame.LoginFrame;
 import com.git.client.ui.frame.MainFrame;
 import com.git.domain.api.IContact;
 import com.git.domain.api.IUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Mediator.
@@ -57,30 +62,73 @@ public class Mediator {
      * @param login    login
      * @param password password
      */
-    public void login(String login, String password) {
+    public void login(String login, String password) throws UserLoginException {
         user = communication.login(login, password, communication.getIpAddress());
-        mainFrame.refreshContactsList(user.getContacts());
+        if (user != null && user.getContact().isOnline()) {
+            mainFrame.refreshContactsList(user.getContacts());
+        } else {
+            throw new UserLoginException("You are not authorized. Try again.");
+        }
     }
 
     /**
-     * Add contact by user name.
-     *
-     * @param userName name  of user which need to add
+     * Logout.
      */
-    public void addContactByUserName(String userName) {
-        user = communication.addContactByUserName(user.getName(), user.getPassword(), userName);
-        mainFrame.refreshContactsList(user.getContacts());
+    public void logout() throws UserLoginException {
+        if (checkAuthorized()) {
+            boolean res = communication.logout(user.getName(), user.getPassword());
+            if (res) {
+                mainFrame.refreshContactsList(Collections.<IContact>emptySet());
+            }
+        } else {
+            throw new UserLoginException("You are not authorized. Please login.");
+        }
     }
 
+
+    /**
+     * Add contact by  name.
+     *
+     * @param name name of contact which need to add
+     * @return {@link IContact}
+     */
+    public IContact addContactByName(String name) throws UserLoginException, ContactException {
+        IContact contact = null;
+        if (checkAuthorized()) {
+            contact = communication.findContactByName(name);
+            if (contact != null) {
+                user = communication.addContactByName(user.getName(), user.getPassword(), contact.getName());
+                mainFrame.refreshContactsList(user.getContacts());
+                return contact;
+            }
+            throw new ContactException("Contact not found.");
+        } else {
+            throw new UserLoginException("You are not authorized. Please login.");
+        }
+
+
+    }
 
     /**
      * Add contact by email.
      *
      * @param email Email
+     * @return {@link IContact}
      */
-    public void addContactByContactEmail(String email) {
-        user = communication.addContactByContactEmail(user.getName(), user.getPassword(), email);
-        mainFrame.refreshContactsList(user.getContacts());
+    public IContact addContactByEmail(String email) throws UserLoginException, ContactException {
+        IContact contact = null;
+        if (checkAuthorized()) {
+            contact = communication.findContactByEmail(email);
+            if (contact != null) {
+                user = communication.addContactByEmail(user.getName(), user.getPassword(), contact.getEmail());
+                mainFrame.refreshContactsList(user.getContacts());
+                return contact;
+            }
+            throw new ContactException("Contact not found.");
+        } else {
+            throw new UserLoginException("You are not authorized. Please login.");
+        }
+
     }
 
     /**
@@ -101,5 +149,13 @@ public class Mediator {
             }
         }
         return removed;
+    }
+
+    private boolean checkAuthorized() {
+        boolean authorized = false;
+        if (user != null || user.getContact().isOnline()) {
+            authorized = true;
+        }
+        return authorized;
     }
 }

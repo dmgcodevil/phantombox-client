@@ -1,18 +1,18 @@
 package com.git.client.exception;
 
 /**
- * User login exception.
+ * Class description.
  * <p/>
  * User: dmgcodevil
- * Date: 12/7/12
- * Time: 3:35 PM
+ * Date: 12/8/12
+ * Time: 10:47 AM
  */
-public class UserLoginException extends Exception {
+public class ContactException extends Exception {
 
     /**
      * Default constructor.
      */
-    public UserLoginException() {
+    public ContactException() {
     }
 
     /**
@@ -20,7 +20,7 @@ public class UserLoginException extends Exception {
      *
      * @param message message
      */
-    public UserLoginException(String message) {
+    public ContactException(String message) {
         super(message);
     }
 }

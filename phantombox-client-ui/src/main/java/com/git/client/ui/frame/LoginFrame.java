@@ -1,5 +1,6 @@
 package com.git.client.ui.frame;
 
+import com.git.client.exception.UserLoginException;
 import com.git.client.ui.Mediator;
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
@@ -13,6 +14,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -88,8 +90,17 @@ public class LoginFrame extends JFrame {
         btnLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mediator.login(loginField.getText(), passwordField.getText());
-                dispose();
+                try {
+                    // TODO refactor it !!!
+                    mediator.login(loginField.getText(), passwordField.getText());
+                    dispose();
+                } catch (UserLoginException ex) {
+                    JOptionPane.showMessageDialog(null,
+                        ex.getMessage(),
+                        "Login",
+                        JOptionPane.ERROR_MESSAGE);
+                }
+
             }
         });
 
