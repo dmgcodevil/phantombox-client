@@ -7,6 +7,8 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
@@ -19,6 +21,8 @@ import javax.swing.border.EmptyBorder;
 public class CallRequestFrame extends JFrame {
 
     private JPanel contentPane;
+    private JButton btnCancel;
+    private JLabel lblContactName;
 
     /**
      * Launch the application.
@@ -40,7 +44,7 @@ public class CallRequestFrame extends JFrame {
      * Create the frame.
      */
     public CallRequestFrame() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         setBounds(100, 100, 205, 278);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -74,11 +78,30 @@ public class CallRequestFrame extends JFrame {
         JLabel lblCall = new JLabel("Call");
         contentPane.add(lblCall, "2, 2");
 
-        JLabel lblContactName = new JLabel("Contact name");
+        lblContactName = new JLabel("Contact name");
         contentPane.add(lblContactName, "4, 2, 3, 1, left, default");
 
-        JButton btnCancel = new JButton("cancel");
+        btnCancel = new JButton("cancel");
         contentPane.add(btnCancel, "4, 8");
     }
 
+    /**
+     * Constructor with parameters.
+     *
+     * @param contactName
+     */
+    public CallRequestFrame(String contactName) {
+        this();
+        lblContactName.setText(contactName);
+        addListeners();
+    }
+
+    private void addListeners() {
+        btnCancel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+               dispose();
+            }
+        });
+    }
 }

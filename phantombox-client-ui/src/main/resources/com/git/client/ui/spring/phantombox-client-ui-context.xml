@@ -11,6 +11,8 @@
     <context:component-scan base-package="com.git.client.ui"/>
 
     <import resource="classpath:com/git/client/net/spring/phantombox-client-net-context.xml"/>
-    <!--<import resource="classpath:com/git/broker/spring/phantombox-broker-context.xml"/>-->
+    <import resource="classpath:com/git/broker/spring/phantombox-broker-context.xml"/>
+
+    <bean id="swingJmsExchanger" class="com.git.client.ui.util.jms.SwingJmsExchanger" parent="abstractJmsExchanger"/>
 
 </beans>

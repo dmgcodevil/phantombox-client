@@ -25,6 +25,7 @@ public class MainApplication {
                 "/com/git/client/ui/spring/phantombox-client-ui-context.xml"
                 });
         Mediator mediator = (Mediator) appContext.getBean("mediator");
+
         final MainFrame mainFrame = new MainFrame(mediator);
         mediator.setMainFrame(mainFrame);
 

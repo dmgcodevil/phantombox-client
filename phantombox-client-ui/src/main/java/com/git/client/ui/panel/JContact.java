@@ -116,6 +116,13 @@ public class JContact extends JPanel {
 
             }
         });
+
+        btnCall.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mediator.call(contact);
+            }
+        });
     }
 
     private static void addPopup(Component component, final JPopupMenu popup) {

@@ -18,5 +18,5 @@ dependencies {
     compile('org.springframework:spring-context:3.1.2.RELEASE')
     compile('org.springframework:spring-core:3.1.2.RELEASE')
 
-	compile('com.jgoodies:forms:1.2.1')
+    compile('com.jgoodies:forms:1.2.1')
 }

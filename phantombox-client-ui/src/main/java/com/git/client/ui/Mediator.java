@@ -1,8 +1,11 @@
 package com.git.client.ui;
 
+import com.git.broker.api.domain.IJmsExchanger;
+import com.git.broker.api.domain.ResponseType;
 import com.git.client.api.net.ICommunication;
 import com.git.client.exception.ContactException;
 import com.git.client.exception.UserLoginException;
+import com.git.client.ui.frame.CallRequestFrame;
 import com.git.client.ui.frame.LoginFrame;
 import com.git.client.ui.frame.MainFrame;
 import com.git.domain.api.IContact;
@@ -10,8 +13,11 @@ import com.git.domain.api.IUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.Collection;
 import java.util.Collections;
+import javax.swing.JFrame;
 
 /**
  * Mediator.
@@ -25,6 +31,9 @@ public class Mediator {
 
     @Autowired
     private ICommunication communication;
+
+    @Autowired
+    private IJmsExchanger jmsExchanger;
 
     private IUser user;
 
@@ -65,6 +74,17 @@ public class Mediator {
     public void login(String login, String password) throws UserLoginException {
         user = communication.login(login, password, communication.getIpAddress());
         if (user != null && user.getContact().isOnline()) {
+            user.getContact().getConnection().setIpAddress(communication.getIpAddress());
+            ServerSocket s = null;
+            try {
+                s = new ServerSocket(0);
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+            user.getContact().getConnection().setVideoPort(s.getLocalPort());
+            user.getContact().getConnection().setAudioPort(s.getLocalPort());
+            //user.getContact().getConnection().setVideoPort(22225);
+            jmsExchanger.setContact(user.getContact());
             mainFrame.refreshContactsList(user.getContacts());
         } else {
             throw new UserLoginException("You are not authorized. Try again.");
@@ -149,6 +169,26 @@ public class Mediator {
             }
         }
         return removed;
+    }
+
+    public void call(IContact contact) {
+        CallRequestFrame callRequestFrame = new CallRequestFrame(contact.getName());
+        callRequestFrame.setVisible(true);
+//        try {
+//            wait(100);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        jmsExchanger.call(user.getContact().getName(), contact.getId());
+        callRequestFrame.dispose();
+    }
+
+    public void answer(ResponseType responseType, String correlationId) {
+        jmsExchanger.answer(responseType, correlationId);
+    }
+
+    public void cancel() {
+
     }
 
     private boolean checkAuthorized() {

@@ -1,11 +1,15 @@
 package com.git.client.ui.frame;
 
+import com.git.broker.api.domain.ResponseType;
+import com.git.client.ui.Mediator;
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -17,6 +21,11 @@ import javax.swing.border.EmptyBorder;
 public class CallAnswerFrame extends JFrame {
 
     private JPanel contentPane;
+    private JButton btnAnswer;
+    private JButton btnCancel;
+    private JLabel lblSubscriber;
+    private Mediator mediator;
+    private String correlationId;
 
     /**
      * Launch the application.
@@ -38,7 +47,7 @@ public class CallAnswerFrame extends JFrame {
      * Create the frame.
      */
     public CallAnswerFrame() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         setBounds(100, 100, 230, 175);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -63,16 +72,40 @@ public class CallAnswerFrame extends JFrame {
         JLabel lblCall = new JLabel("Call");
         contentPane.add(lblCall, "2, 2, left, default");
 
-        JLabel lblNewLabel = new JLabel("New label");
-        contentPane.add(lblNewLabel, "4, 2, 5, 1");
+        lblSubscriber = new JLabel("New label");
+        contentPane.add(lblSubscriber, "4, 2, 5, 1");
 
         URL answerImageURL = CallAnswerFrame.class.getResource("/com/git/client/ui/ico/phone.png");
         URL cancelImageURL = CallAnswerFrame.class.getResource("/com/git/client/ui/ico/cancel.png");
-        JButton btnAnswer = new JButton(new ImageIcon(answerImageURL));
+        btnAnswer = new JButton(new ImageIcon(answerImageURL));
         contentPane.add(btnAnswer, "2, 4, 3, 1");
 
-        JButton btnCancel = new JButton(new ImageIcon(cancelImageURL));
+        btnCancel = new JButton(new ImageIcon(cancelImageURL));
         contentPane.add(btnCancel, "6, 4, 3, 1");
     }
 
+    public CallAnswerFrame(Mediator mediator, String correlationId, String subscriberName) {
+        this();
+        this.mediator = mediator;
+        this.correlationId = correlationId;
+        lblSubscriber.setText(subscriberName);
+        addListeners();
+    }
+
+    private void addListeners() {
+        btnAnswer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mediator.answer(ResponseType.ACCEPT, correlationId);
+            }
+        });
+
+        btnCancel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mediator.answer(ResponseType.CANCEL, correlationId);
+                dispose();
+            }
+        });
+    }
 }
