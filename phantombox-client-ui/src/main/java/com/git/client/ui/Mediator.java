@@ -13,11 +13,19 @@ import com.git.domain.api.IUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Timer;
 import javax.swing.JFrame;
+
 
 /**
  * Mediator.
@@ -72,18 +80,16 @@ public class Mediator {
      * @param password password
      */
     public void login(String login, String password) throws UserLoginException {
-        user = communication.login(login, password, communication.getIpAddress());
+        user = communication.login(login, password);
         if (user != null && user.getContact().isOnline()) {
-            user.getContact().getConnection().setIpAddress(communication.getIpAddress());
             ServerSocket s = null;
             try {
                 s = new ServerSocket(0);
             } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
             user.getContact().getConnection().setVideoPort(s.getLocalPort());
             user.getContact().getConnection().setAudioPort(s.getLocalPort());
-            //user.getContact().getConnection().setVideoPort(22225);
             jmsExchanger.setContact(user.getContact());
             mainFrame.refreshContactsList(user.getContacts());
         } else {
@@ -171,16 +177,25 @@ public class Mediator {
         return removed;
     }
 
-    public void call(IContact contact) {
-        CallRequestFrame callRequestFrame = new CallRequestFrame(contact.getName());
+    public void call(final IContact contact) {
+        final CallRequestFrame callRequestFrame = new CallRequestFrame(contact.getName());
         callRequestFrame.setVisible(true);
-//        try {
-//            wait(100);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-        jmsExchanger.call(user.getContact().getName(), contact.getId());
+        final Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                jmsExchanger.call(user.getContact().getName(), contact.getId());
+            }
+        });
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+
+
         callRequestFrame.dispose();
+
     }
 
     public void answer(ResponseType responseType, String correlationId) {

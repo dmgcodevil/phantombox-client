@@ -44,6 +44,11 @@ public class Communication implements ICommunication {
         return restUserServiceCaller.login(name, password, ipAddress);
     }
 
+    @Override
+    public IUser login(String name, String password) {
+        return restUserServiceCaller.login(name, password);
+    }
+
     /**
      * {@inheritDoc}
      */

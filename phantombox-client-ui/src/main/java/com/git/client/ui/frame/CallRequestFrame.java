@@ -13,16 +13,28 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
-public class CallRequestFrame extends JFrame {
+public class CallRequestFrame extends BaseFrame {
 
     private JPanel contentPane;
     private JButton btnCancel;
     private JLabel lblContactName;
+
+
+    public JPanel getContentPane() {
+        return contentPane;
+    }
+
+    public void setContentPane(JPanel contentPane) {
+        this.contentPane = contentPane;
+    }
 
     /**
      * Launch the application.
@@ -83,6 +95,9 @@ public class CallRequestFrame extends JFrame {
 
         btnCancel = new JButton("cancel");
         contentPane.add(btnCancel, "4, 8");
+
+        alignment(this);
+
     }
 
     /**
@@ -100,7 +115,7 @@ public class CallRequestFrame extends JFrame {
         btnCancel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-               dispose();
+                dispose();
             }
         });
     }

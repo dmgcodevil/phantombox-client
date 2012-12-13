@@ -77,7 +77,6 @@ public class SwingJmsExchanger extends AbstractJmsExchanger implements IJmsExcha
 
     @Override
     public void listen(IConnection connection) {
-        String RTP_VIDEO = "rtp://224.123.111.101:22224/video";
         StringBuilder video = new StringBuilder("rtp://");
         video.append(connection.getIpAddress())
             .append(":")

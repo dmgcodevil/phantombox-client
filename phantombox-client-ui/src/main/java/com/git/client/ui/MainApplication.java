@@ -1,6 +1,7 @@
 package com.git.client.ui;
 
 import com.git.client.ui.frame.MainFrame;
+import com.git.client.ui.util.SaveOnCloseWindowListener;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -28,6 +29,7 @@ public class MainApplication {
 
         final MainFrame mainFrame = new MainFrame(mediator);
         mediator.setMainFrame(mainFrame);
+        mainFrame.addWindowListener(new SaveOnCloseWindowListener(mediator, mainFrame));
 
         EventQueue.invokeLater(new Runnable() {
             public void run() {

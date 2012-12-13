@@ -23,6 +23,15 @@ public interface ICommunication {
     IUser login(String name, String password, String ipAddress);
 
     /**
+     * Login.
+     *
+     * @param name      user name
+     * @param password  user password
+     * @return {@link IUser}
+     */
+    IUser login(String name, String password);
+
+    /**
      * logout.
      *
      * @param name     name
