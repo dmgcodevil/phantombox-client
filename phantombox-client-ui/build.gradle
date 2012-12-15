@@ -8,6 +8,7 @@ dependencies {
     compile('com.git.phantombox:phantombox-domain-util:1.0.0')
     compile('com.git.phantombox:phantombox-broker-api:1.0.0')
     compile('com.git.phantombox:phantombox-broker-impl:1.0.0')
+    compile('com.git.phantombox:phantombox-broker-ui:1.0.0')
     compile project(':phantombox-client-api')
     compile project(':phantombox-client-domain')
     compile project(':phantombox-client-webcam')

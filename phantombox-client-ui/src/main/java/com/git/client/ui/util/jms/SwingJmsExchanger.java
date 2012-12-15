@@ -10,7 +10,6 @@ import com.git.client.api.webcam.processor.IProcessorFactory;
 import com.git.client.api.webcam.transmitter.ITransmitterFactory;
 import com.git.client.api.webcam.transmitter.TransmissionType;
 import com.git.client.ui.Mediator;
-import com.git.client.ui.frame.CallAnswerFrame;
 import com.git.client.ui.frame.VideoFrame;
 import com.git.client.webcam.datasource.DataSourceFactory;
 import com.git.client.webcam.device.DeviceManager;
@@ -19,14 +18,9 @@ import com.git.client.webcam.processor.ProcessorFactory;
 import com.git.client.webcam.transmitter.TransmitterFactoryDataSink;
 import com.git.client.webcam.util.BroadcasterBuilder;
 import com.git.domain.api.IConnection;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.media.Manager;
-import javax.media.MediaLocator;
-import javax.swing.JFrame;
 
 /**
  * Class description.
@@ -37,22 +31,13 @@ import javax.swing.JFrame;
  */
 public class SwingJmsExchanger extends AbstractJmsExchanger implements IJmsExchanger {
 
-    @Autowired
-    private Mediator mediator;
-
     public static final String VFM_WDM = "vfw:Microsoft WDM Image Capture (Win32):0";
     public static final String DSC = "DirectSoundCapture";
     private static final Logger LOGGER = LoggerFactory.getLogger(SwingJmsExchanger.class);
 
-    @Override
-    public JFrame createIncomingCallFrame(String subscriberName, String correlationId,
-                                          IJmsExchanger jmsExchanger) {
-        CallAnswerFrame callAnswerFrame = new CallAnswerFrame(mediator, correlationId, subscriberName);
-        return callAnswerFrame;
-    }
 
     @Override
-    public void broadcast(IConnection connection) {
+    public void broadcast(final IConnection connection) {
         BroadcasterBuilder broadcasterBuilder = new BroadcasterBuilder();
         ITransmitterFactory transmitterFactory = new TransmitterFactoryDataSink();
         IProcessorFactory processorFactory = new ProcessorFactory();
@@ -67,12 +52,19 @@ public class SwingJmsExchanger extends AbstractJmsExchanger implements IJmsExcha
         broadcasterBuilder.buildMediaLocatorFactory(mediaLocatorFactory);
         broadcasterBuilder.buildProcessorFactory(processorFactory);
         broadcasterBuilder.buildTransmitterFactory(transmitterFactory);
-        IBroadcaster videoBroadcaster = broadcasterBuilder.getSender();
-        videoBroadcaster.start(TransmissionType.VIDEO, VFM_WDM, connection.getIpAddress(), connection.getVideoPort());
+        final IBroadcaster videoBroadcaster = broadcasterBuilder.getSender();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                videoBroadcaster.start(TransmissionType.VIDEO, VFM_WDM, connection.getIpAddress(), connection.getVideoPort());
+            }
+        });
+        thread.start();
+
         LOGGER.info("-------- START VIDEO BROADCAST --------");
-       // IBroadcaster audioSender = broadcasterBuilder.getSender();
-       // audioSender.start(TransmissionType.AUDIO, DSC, connection.getIpAddress(), connection.getAudioPort());
-      //  LOGGER.info("-------- START AUDIO BROADCAST --------");
+        // IBroadcaster audioSender = broadcasterBuilder.getSender();
+        // audioSender.start(TransmissionType.AUDIO, DSC, connection.getIpAddress(), connection.getAudioPort());
+        //  LOGGER.info("-------- START AUDIO BROADCAST --------");
     }
 
     @Override
@@ -86,8 +78,4 @@ public class SwingJmsExchanger extends AbstractJmsExchanger implements IJmsExcha
         videoFrame.setVisible(true);
     }
 
-    @Override
-    public void cancel() {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
 }

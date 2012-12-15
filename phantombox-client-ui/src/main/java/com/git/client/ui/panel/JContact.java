@@ -1,5 +1,6 @@
 package com.git.client.ui.panel;
 
+import com.git.client.exception.CallException;
 import com.git.client.ui.Mediator;
 import com.git.domain.api.IContact;
 import com.jgoodies.forms.factories.FormFactory;
@@ -119,8 +120,15 @@ public class JContact extends JPanel {
 
         btnCall.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                mediator.call(contact);
+            public void actionPerformed(ActionEvent event) {
+                try {
+                    mediator.call(contact);
+                } catch (CallException ex) {
+                    JOptionPane.showMessageDialog(null,
+                        ex.getMessage(),
+                        "Call",
+                        JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
     }

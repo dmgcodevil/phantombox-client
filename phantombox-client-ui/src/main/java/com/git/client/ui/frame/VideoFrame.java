@@ -29,7 +29,7 @@ public class VideoFrame extends JFrame {
     private static final Logger LOGGER = LoggerFactory.getLogger(VideoFrame.class);
 
     public VideoFrame(String rtpVideo) {
-        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.rtpVideo = rtpVideo;
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {

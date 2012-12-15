@@ -1,11 +1,14 @@
 package com.git.client.ui;
 
+import static com.git.broker.api.domain.Constants.CONTACT_ID_PROPERTY;
 import com.git.broker.api.domain.IJmsExchanger;
-import com.git.broker.api.domain.ResponseType;
+import com.git.broker.api.domain.ISelectorBuilder;
+import com.git.broker.api.domain.SelectorCondition;
+import com.git.broker.impl.domain.SelectorBuilder;
 import com.git.client.api.net.ICommunication;
+import com.git.client.exception.CallException;
 import com.git.client.exception.ContactException;
 import com.git.client.exception.UserLoginException;
-import com.git.client.ui.frame.CallRequestFrame;
 import com.git.client.ui.frame.LoginFrame;
 import com.git.client.ui.frame.MainFrame;
 import com.git.domain.api.IContact;
@@ -13,18 +16,9 @@ import com.git.domain.api.IUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Timer;
-import javax.swing.JFrame;
 
 
 /**
@@ -42,6 +36,8 @@ public class Mediator {
 
     @Autowired
     private IJmsExchanger jmsExchanger;
+
+    private ISelectorBuilder selectorBuilder = new SelectorBuilder();
 
     private IUser user;
 
@@ -91,6 +87,11 @@ public class Mediator {
             user.getContact().getConnection().setVideoPort(s.getLocalPort());
             user.getContact().getConnection().setAudioPort(s.getLocalPort());
             jmsExchanger.setContact(user.getContact());
+            jmsExchanger.setSelector(selectorBuilder.createSelector()
+                .addProperty(CONTACT_ID_PROPERTY)
+                .addCondition(SelectorCondition.EQUALS)
+                .addPropertyValue(user.getContact().getId())
+                .buildSelector());
             mainFrame.refreshContactsList(user.getContacts());
         } else {
             throw new UserLoginException("You are not authorized. Try again.");
@@ -177,38 +178,24 @@ public class Mediator {
         return removed;
     }
 
-    public void call(final IContact contact) {
-        final CallRequestFrame callRequestFrame = new CallRequestFrame(contact.getName());
-        callRequestFrame.setVisible(true);
-        final Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                jmsExchanger.call(user.getContact().getName(), contact.getId());
-            }
-        });
-        thread.start();
-        try {
-            thread.join();
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
+    public void call(final IContact contact) throws CallException {
+        IContact repContact = communication.findContactByName(contact.getName());
+        if (repContact != null && repContact.isOnline()) {
+            Thread callThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jmsExchanger.call(user.getContact(), contact);
+                }
+            });
+            callThread.start();
+        } else {
+            throw new CallException("Contact '" + contact.getName() + "' offline");
         }
-
-
-        callRequestFrame.dispose();
-
-    }
-
-    public void answer(ResponseType responseType, String correlationId) {
-        jmsExchanger.answer(responseType, correlationId);
-    }
-
-    public void cancel() {
-
     }
 
     private boolean checkAuthorized() {
         boolean authorized = false;
-        if (user != null || user.getContact().isOnline()) {
+        if (user != null && user.getContact().isOnline()) {
             authorized = true;
         }
         return authorized;
