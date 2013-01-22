@@ -1,5 +1,9 @@
 apply plugin: 'eclipse'
 
+checkstyleMain {
+    exclude('**/*.java')
+}
+
 dependencies {
 
     /* ---------------- phantombox dependencies ---------------- */
