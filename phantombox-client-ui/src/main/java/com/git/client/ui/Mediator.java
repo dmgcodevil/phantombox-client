@@ -133,7 +133,6 @@ public class Mediator {
             throw new UserLoginException("You are not authorized. Please login.");
         }
 
-
     }
 
     /**
@@ -196,6 +195,22 @@ public class Mediator {
             callThread.start();
         } else {
             throw new CallException("Contact '" + contact.getName() + "' offline");
+        }
+    }
+
+    // TODO test it
+    public void stopCall(final IContact contact) {
+        IContact repContact = communication.findContactByName(contact.getName());
+        if (repContact != null && repContact.isOnline()) {
+            Thread callThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jmsExchanger.stopCall(user.getContact().getConnection(), contact);
+                }
+            });
+            callThread.start();
+        } else {
+            //TODO throw new CallException("Contact '" + contact.getName() + "' offline");
         }
     }
 

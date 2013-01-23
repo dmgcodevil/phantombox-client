@@ -1,5 +1,7 @@
 package com.git.client.webcam.broadcast;
 
+import static com.git.client.api.webcam.transmitter.TransmissionType.VIDEO;
+import com.git.client.api.exception.BroadcastException;
 import com.git.client.api.exception.DataSourceCreationException;
 import com.git.client.api.exception.DeviceNotFoundException;
 import com.git.client.api.exception.MediaLocatorCreationException;
@@ -12,26 +14,30 @@ import com.git.client.api.webcam.locator.IMediaLocatorFactory;
 import com.git.client.api.webcam.processor.IProcessorFactory;
 import com.git.client.api.webcam.transmitter.ITransmitterFactory;
 import com.git.client.api.webcam.transmitter.TransmissionType;
-
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import com.git.client.webcam.datasource.DataSourceFactory;
+import com.git.client.webcam.device.DeviceManager;
+import com.git.client.webcam.locator.MediaLocatorFactory;
+import com.git.client.webcam.processor.ProcessorFactory;
+import com.git.client.webcam.transmitter.TransmitterFactoryDataSink;
+import com.git.domain.api.IConnection;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
 import javax.media.CaptureDeviceInfo;
 import javax.media.Processor;
 import javax.media.protocol.DataSource;
 
 /**
- * Class description.
+ * {@link IBroadcaster} implementation.
  * <p/>
  * User: dmgcodevil
  * Date: 12/10/12
  * Time: 7:15 PM
  */
-public class Broadcaster implements IBroadcaster{
+public class Broadcaster implements IBroadcaster {
+
     private ITransmitterFactory transmitterFactory;
 
     private IProcessorFactory processorFactory;
@@ -42,9 +48,37 @@ public class Broadcaster implements IBroadcaster{
 
     private IMediaLocatorFactory mediaLocatorFactory;
 
-    private Map<TransmissionType, Processor> processorPool = new HashMap();
+    private Table<TransmissionType, IConnection, Processor> processorPool = HashBasedTable.create();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Broadcaster.class);
+
+    private static volatile Broadcaster instance;
+
+    /**
+     * Default constructor.
+     */
+    private Broadcaster() {
+        this.transmitterFactory = new TransmitterFactoryDataSink();
+        this.processorFactory = new ProcessorFactory();
+        this.deviceManager = new DeviceManager();
+        this.dataSourceFactory = new DataSourceFactory();
+        this.mediaLocatorFactory = new MediaLocatorFactory();
+
+        this.deviceManager.initDevices();
+    }
+
+    public static Broadcaster getInstance() {
+        Broadcaster localInstance = instance;
+        if (localInstance == null) {
+            synchronized (Broadcaster.class) {
+                localInstance = instance;
+                if (localInstance == null) {
+                    instance = localInstance = new Broadcaster();
+                }
+            }
+        }
+        return localInstance;
+    }
 
     /**
      * {@inheritDoc}
@@ -130,46 +164,17 @@ public class Broadcaster implements IBroadcaster{
      * {@inheritDoc}
      */
     @Override
-    public Map<TransmissionType, Processor> getProcessorPool() {
-        return processorPool;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setProcessorPool(Map<TransmissionType, Processor> processorPool) {
-        this.processorPool = processorPool;
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    // TODO throw BroadcastException
-    public void start(TransmissionType type, CaptureDeviceInfo device, String address, int port) {
-        try {
-            // TODO  make loading processor from pull. use Guava Table <type, device, processor> instead of Map<TransmissionType, Processor>
-
-            DataSource dataSource = dataSourceFactory.createDataSource(
-                mediaLocatorFactory.createMediaLocator(device));
-            Processor processor = processorFactory.createProcessor(dataSource);
-            transmitterFactory.createTransmitter(processor.getDataOutput(), address, port, type);
-            processor.start();
-            LOGGER.info("Processor is started.");
-            LOGGER.info("Started transferring data.");
-            processorPool.put(type, processor);
-            // TODO throw BroadcastException
-        } catch (DataSourceCreationException e) {
-            LOGGER.error(ExceptionUtils.getMessage(e));
-        } catch (ProcessorCreationException e) {
-            LOGGER.error(ExceptionUtils.getMessage(e));
-        } catch (TransmitterException e) {
-            LOGGER.error(ExceptionUtils.getMessage(e));
-        } catch (MediaLocatorCreationException e) {
-            LOGGER.error(ExceptionUtils.getMessage(e));
+    @Deprecated
+    public void start(TransmissionType type, CaptureDeviceInfo device, IConnection connection)
+        throws BroadcastException {
+        Processor processor;
+        if (!processorPool.contains(type, connection)) {
+            processor = createProcessor(device);
+            processorPool.put(type, connection, processor);
+        } else {
+            processor = processorPool.get(type, connection);
         }
+        start(processor, type, connection);
     }
 
 
@@ -177,12 +182,13 @@ public class Broadcaster implements IBroadcaster{
      * {@inheritDoc}
      */
     @Override
-    public void start(TransmissionType type, String device, String address, int port) {
+    public void start(TransmissionType type, String device, IConnection connection)
+        throws BroadcastException {
         try {
             CaptureDeviceInfo deviceInfo = deviceManager.getCaptureDeviceInfo(device);
-            start(type, deviceInfo, address, port);
+            start(type, deviceInfo, connection);
         } catch (DeviceNotFoundException e) {
-            LOGGER.error(ExceptionUtils.getMessage(e));
+            throw new BroadcastException("device not found", e);
         }
     }
 
@@ -190,14 +196,15 @@ public class Broadcaster implements IBroadcaster{
      * {@inheritDoc}
      */
     @Override
-    public void stop(TransmissionType type) {
-        if (MapUtils.isNotEmpty(processorPool)) {
-            Processor processor = processorPool.get(type);
+    public void stop(TransmissionType type, IConnection connection) throws BroadcastException {
+        if (!processorPool.isEmpty()) {
+            Processor processor = processorPool.get(type, connection);
             if (processor != null) {
+                disposeTransmitter(type, connection);
                 processor.stop();
-                LOGGER.info("Transmission " + type.getValue() + " is stopped.");
+                LOGGER.info("Transmission " + type.getValue() + "for connection: " + connection + " is stopped.");
             } else {
-                LOGGER.error("Transmission " + type.getValue() + " not running.");
+                throw new BroadcastException("Transmission " + type.getValue() + "for connection: " + connection + " not running.");
             }
         }
     }
@@ -207,11 +214,67 @@ public class Broadcaster implements IBroadcaster{
      * {@inheritDoc}
      */
     @Override
+    @Deprecated
     public void stop() {
-        if (MapUtils.isNotEmpty(processorPool)) {
-            for (TransmissionType type : processorPool.keySet()) {
-                stop(type);
+        if (!processorPool.isEmpty()) {
+            for (Processor processor : processorPool.values()) {
+                processor.stop();
             }
         }
+    }
+
+    private Processor createProcessor(CaptureDeviceInfo device) throws BroadcastException {
+        Processor processor;
+        try {
+            DataSource dataSource = dataSourceFactory.createDataSource(
+                mediaLocatorFactory.createMediaLocator(device));
+            processor = processorFactory.createProcessor(dataSource);
+        } catch (MediaLocatorCreationException e) {
+            throw new BroadcastException("failed create MediaLocator", e);
+        } catch (DataSourceCreationException e) {
+            throw new BroadcastException("failed create dataSource", e);
+        } catch (ProcessorCreationException e) {
+            throw new BroadcastException("failed create processor", e);
+        }
+        return processor;
+    }
+
+    private void start(Processor processor, TransmissionType type, IConnection connection)
+        throws BroadcastException {
+        try {
+            int port;
+            LOGGER.info("Broadcaster::start(); Create transmitter. type={}, connection = {},video_port = {} ",
+                new String[]{type.getValue(), connection.toString()});
+            // TODO move it to transmitterFactory
+            if (VIDEO.equals(type)) {
+                port = connection.getVideoPort();
+            } else {
+                port = connection.getAudioPort();
+            }
+            transmitterFactory.createTransmitter(processor.getDataOutput(), connection.getIpAddress(), port, type);
+            processor.start();
+            LOGGER.info("Broadcaster::start(); Processor is started.");
+            LOGGER.info("Broadcaster::start(); Started transferring data.");
+        } catch (TransmitterException e) {
+            throw new BroadcastException("failed transferring data ");
+        }
+
+    }
+
+    // TODO move it to transmitterFactory
+    private void disposeTransmitter(TransmissionType type, IConnection connection) throws BroadcastException {
+        int port;
+
+        if (VIDEO.equals(type)) {
+            port = connection.getVideoPort();
+        } else {
+            port = connection.getAudioPort();
+        }
+        try {
+            transmitterFactory.disposeTransmitter(connection.getIpAddress(), port, type);
+        } catch (TransmitterException e) {
+            throw new BroadcastException("Transmission " + type.getValue() + "for connection: " + connection + " not running.", e);
+        }
+
     }
 }

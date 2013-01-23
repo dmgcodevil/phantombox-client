@@ -1,15 +1,15 @@
 package com.git.client.api.webcam.broadcast;
 
+import com.git.client.api.exception.BroadcastException;
 import com.git.client.api.webcam.datasource.IDataSourceFactory;
 import com.git.client.api.webcam.device.IDeviceManager;
 import com.git.client.api.webcam.locator.IMediaLocatorFactory;
 import com.git.client.api.webcam.processor.IProcessorFactory;
 import com.git.client.api.webcam.transmitter.ITransmitterFactory;
 import com.git.client.api.webcam.transmitter.TransmissionType;
+import com.git.domain.api.IConnection;
 
-import java.util.Map;
 import javax.media.CaptureDeviceInfo;
-import javax.media.Processor;
 
 /**
  * Class description.
@@ -91,46 +91,31 @@ public interface IBroadcaster {
     void setMediaLocatorFactory(IMediaLocatorFactory mediaLocatorFactory);
 
     /**
-     * Gets processor pool.
+     * Start transmission.
      *
-     * @return processor pool
+     * @param type       {@link TransmissionType}
+     * @param device     {@link javax.media.CaptureDeviceInfo}
+     * @param connection {@link IConnection}
+     * @throws BroadcastException
      */
-    Map<TransmissionType, Processor> getProcessorPool();
-
-    /**
-     * Set processor pool.
-     *
-     * @param processorPool processor pool
-     */
-    void setProcessorPool(Map<TransmissionType, Processor> processorPool);
-
+    void start(TransmissionType type, CaptureDeviceInfo device, IConnection connection) throws BroadcastException;
 
     /**
      * Start transmission.
      *
-     * @param type    {@link TransmissionType}
-     * @param device  {@link javax.media.CaptureDeviceInfo}
-     * @param address address
-     * @param port    port
+     * @param type       {@link TransmissionType}
+     * @param device     device
+     * @param connection {@link IConnection}
      */
-    void start(TransmissionType type, CaptureDeviceInfo device, String address, int port);
-
-    /**
-     * Start transmission.
-     *
-     * @param type    {@link TransmissionType}
-     * @param device  device
-     * @param address address
-     * @param port    port
-     */
-    void start(TransmissionType type, String device, String address, int port);
+    void start(TransmissionType type, String device, IConnection connection) throws BroadcastException;
 
     /**
      * Stop current transmission.
      *
-     * @param type {@link TransmissionType}
+     * @param type       {@link TransmissionType}
+     * @param connection {@link IConnection}
      */
-    void stop(TransmissionType type);
+    void stop(TransmissionType type, IConnection connection) throws BroadcastException;
 
     /**
      * Stop all transmissions.

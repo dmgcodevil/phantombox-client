@@ -1,11 +1,12 @@
-package com.git.client.exception;
+package com.git.client.api.exception;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Raman_Pliashkou
+ * BroadcastException.
+ * <p/>
  * Date: 1/23/13
- * Time: 12:48 PM
- * To change this template use File | Settings | File Templates.
+ * Time: 11:08 PM
+ *
+ * @author dmgcodevil
  */
 public class BroadcastException extends Exception {
 
@@ -22,5 +23,9 @@ public class BroadcastException extends Exception {
      */
     public BroadcastException(String message) {
         super(message);
+    }
+
+    public BroadcastException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

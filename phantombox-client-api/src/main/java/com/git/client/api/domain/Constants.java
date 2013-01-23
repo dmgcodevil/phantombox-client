@@ -11,7 +11,7 @@ package com.git.client.api.domain;
 public class Constants {
 
     private Constants() {
-        throw new AssertionError();
+        throw new IllegalAccessError();
     }
 
     /**
@@ -19,4 +19,13 @@ public class Constants {
      */
     public static final String FILE_NAME = "setup.xml";
 
+    /**
+     * VFM_WDM.
+     */
+    public static final String VFM_WDM = "vfw:Microsoft WDM Image Capture (Win32):0";
+
+    /**
+     * DSC.
+     */
+    public static final String DSC = "DirectSoundCapture";
 }

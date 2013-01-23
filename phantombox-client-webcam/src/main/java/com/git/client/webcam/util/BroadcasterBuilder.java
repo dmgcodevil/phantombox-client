@@ -6,7 +6,6 @@ import com.git.client.api.webcam.device.IDeviceManager;
 import com.git.client.api.webcam.locator.IMediaLocatorFactory;
 import com.git.client.api.webcam.processor.IProcessorFactory;
 import com.git.client.api.webcam.transmitter.ITransmitterFactory;
-import com.git.client.webcam.broadcast.Broadcaster;
 
 /**
  * Class description.
@@ -78,12 +77,12 @@ public class BroadcasterBuilder {
      * @return {@link IBroadcaster}
      */
     public IBroadcaster getSender() {
-        IBroadcaster broadcaster = new Broadcaster();
-        broadcaster.setTransmitterFactory(transmitterFactoryBuilder);
-        broadcaster.setProcessorFactory(processorFactoryBuilder);
-        broadcaster.setDeviceManager(deviceManagerBuilder);
-        broadcaster.setDataSourceFactory(dataSourceFactoryBuilder);
-        broadcaster.setMediaLocatorFactory(mediaLocatorFactoryBuilder);
-        return broadcaster;
+//        IBroadcaster broadcaster = new Broadcaster();
+//        broadcaster.setTransmitterFactory(transmitterFactoryBuilder);
+//        broadcaster.setProcessorFactory(processorFactoryBuilder);
+//        broadcaster.setDeviceManager(deviceManagerBuilder);
+//        broadcaster.setDataSourceFactory(dataSourceFactoryBuilder);
+//        broadcaster.setMediaLocatorFactory(mediaLocatorFactoryBuilder);
+        return null;
     }
 }
