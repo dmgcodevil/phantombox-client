@@ -147,8 +147,11 @@ public class Broadcaster implements IBroadcaster{
      * {@inheritDoc}
      */
     @Override
+    // TODO throw BroadcastException
     public void start(TransmissionType type, CaptureDeviceInfo device, String address, int port) {
         try {
+            // TODO  make loading processor from pull. use Guava Table <type, device, processor> instead of Map<TransmissionType, Processor>
+
             DataSource dataSource = dataSourceFactory.createDataSource(
                 mediaLocatorFactory.createMediaLocator(device));
             Processor processor = processorFactory.createProcessor(dataSource);
@@ -157,6 +160,7 @@ public class Broadcaster implements IBroadcaster{
             LOGGER.info("Processor is started.");
             LOGGER.info("Started transferring data.");
             processorPool.put(type, processor);
+            // TODO throw BroadcastException
         } catch (DataSourceCreationException e) {
             LOGGER.error(ExceptionUtils.getMessage(e));
         } catch (ProcessorCreationException e) {

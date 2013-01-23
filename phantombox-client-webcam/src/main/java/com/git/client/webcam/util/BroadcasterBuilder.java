@@ -15,6 +15,7 @@ import com.git.client.webcam.broadcast.Broadcaster;
  * Date: 12/10/12
  * Time: 7:17 PM
  */
+// TODO remove it if unnecessary
 public class BroadcasterBuilder {
     private ITransmitterFactory transmitterFactoryBuilder;
 

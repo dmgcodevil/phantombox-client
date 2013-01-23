@@ -178,6 +178,12 @@ public class Mediator {
         return removed;
     }
 
+    /**
+     * Call.
+     *
+     * @param contact {@link IContact}
+     * @throws CallException
+     */
     public void call(final IContact contact) throws CallException {
         IContact repContact = communication.findContactByName(contact.getName());
         if (repContact != null && repContact.isOnline()) {

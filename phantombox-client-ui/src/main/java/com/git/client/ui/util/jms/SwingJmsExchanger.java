@@ -9,7 +9,6 @@ import com.git.client.api.webcam.locator.IMediaLocatorFactory;
 import com.git.client.api.webcam.processor.IProcessorFactory;
 import com.git.client.api.webcam.transmitter.ITransmitterFactory;
 import com.git.client.api.webcam.transmitter.TransmissionType;
-import com.git.client.ui.Mediator;
 import com.git.client.ui.frame.VideoFrame;
 import com.git.client.webcam.datasource.DataSourceFactory;
 import com.git.client.webcam.device.DeviceManager;
@@ -20,10 +19,11 @@ import com.git.client.webcam.util.BroadcasterBuilder;
 import com.git.domain.api.IConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PostConstruct;
 
 /**
- * Class description.
+ * SwingJmsExchanger.
  * <p/>
  * User: dmgcodevil
  * Date: 12/10/12
@@ -35,9 +35,11 @@ public class SwingJmsExchanger extends AbstractJmsExchanger implements IJmsExcha
     public static final String DSC = "DirectSoundCapture";
     private static final Logger LOGGER = LoggerFactory.getLogger(SwingJmsExchanger.class);
 
+    private IBroadcaster broadcaster;
 
-    @Override
-    public void broadcast(final IConnection connection) {
+    // TODO move it to Broadcaster
+    @PostConstruct
+    private void init() {
         BroadcasterBuilder broadcasterBuilder = new BroadcasterBuilder();
         ITransmitterFactory transmitterFactory = new TransmitterFactoryDataSink();
         IProcessorFactory processorFactory = new ProcessorFactory();
@@ -52,11 +54,16 @@ public class SwingJmsExchanger extends AbstractJmsExchanger implements IJmsExcha
         broadcasterBuilder.buildMediaLocatorFactory(mediaLocatorFactory);
         broadcasterBuilder.buildProcessorFactory(processorFactory);
         broadcasterBuilder.buildTransmitterFactory(transmitterFactory);
-        final IBroadcaster videoBroadcaster = broadcasterBuilder.getSender();
+        broadcaster = broadcasterBuilder.getSender();
+    }
+
+    @Override
+    public void broadcast(final IConnection connection) {
+
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                videoBroadcaster.start(TransmissionType.VIDEO, VFM_WDM, connection.getIpAddress(), connection.getVideoPort());
+                broadcaster.start(TransmissionType.VIDEO, VFM_WDM, connection.getIpAddress(), connection.getVideoPort());
             }
         });
         thread.start();

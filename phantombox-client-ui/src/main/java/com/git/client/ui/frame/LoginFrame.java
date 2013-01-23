@@ -91,7 +91,7 @@ public class LoginFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    // TODO refactor it !!!
+                    // TODO refactor it (passwordField.getText())
                     mediator.login(loginField.getText(), passwordField.getText());
                     dispose();
                 } catch (UserLoginException ex) {

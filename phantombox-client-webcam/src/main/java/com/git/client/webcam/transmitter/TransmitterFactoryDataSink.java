@@ -47,7 +47,7 @@ public class TransmitterFactoryDataSink implements ITransmitterFactory {
             rtptransmitter.open();
             rtptransmitter.start();
             dataOutput.start();
-            dataSinkMap.put(rtpURL, rtptransmitter);
+            dataSinkMap.put(rtpURL, rtptransmitter); // TODO if DataSink already in pull throw TransmitterException ?
         } catch (MediaException me) {
             throw new TransmitterException("Couldn't create RTP data sink", me);
         } catch (IOException ioe) {
