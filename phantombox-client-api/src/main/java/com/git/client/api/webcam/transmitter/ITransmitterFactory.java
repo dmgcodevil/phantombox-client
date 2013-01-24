@@ -1,6 +1,8 @@
 package com.git.client.api.webcam.transmitter;
 
+import com.git.client.api.domain.ICaptureDevice;
 import com.git.client.api.exception.TransmitterException;
+import com.git.domain.api.IConnection;
 
 import javax.media.protocol.DataSource;
 
@@ -17,22 +19,27 @@ public interface ITransmitterFactory {
      * Creates transmitter.
      *
      * @param dataOutput {@link DataSource}
-     * @param ipAddress  ip address
-     * @param port       port
-     * @param type       {@link TransmissionType}
+     * @param connection {@link IConnection}
+     * @param device     {@link ICaptureDevice}
      * @throws TransmitterException {@link TransmitterException}
      */
-    void createTransmitter(DataSource dataOutput, String ipAddress, int port, TransmissionType type)
+    void createTransmitter(DataSource dataOutput, IConnection connection, ICaptureDevice device)
         throws TransmitterException;
 
     /**
      * Dispose transmitter.
      *
-     * @param ipAddress ip address
-     * @param port      port
-     * @param type      {@link TransmissionType}
+     * @param connection {@link IConnection}
+     * @param device     {@link ICaptureDevice}
      * @throws TransmitterException {@link TransmitterException}
      */
-    void disposeTransmitter(String ipAddress, int port, TransmissionType type)
+    void disposeTransmitter(IConnection connection, ICaptureDevice device)
         throws TransmitterException;
+
+    /**
+     * Dispose transmitter.
+     *
+     * @throws TransmitterException
+     */
+    void disposeTransmitter() throws TransmitterException;
 }

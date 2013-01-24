@@ -1,5 +1,6 @@
 package com.git.client.api.webcam.broadcast;
 
+import com.git.client.api.domain.ICaptureDevice;
 import com.git.client.api.exception.BroadcastException;
 import com.git.client.api.webcam.datasource.IDataSourceFactory;
 import com.git.client.api.webcam.device.IDeviceManager;
@@ -90,35 +91,35 @@ public interface IBroadcaster {
      */
     void setMediaLocatorFactory(IMediaLocatorFactory mediaLocatorFactory);
 
+
+    /**
+     * Start broadcasting.
+     *
+     * @param connection {@link IConnection}
+     */
+    void start(IConnection connection) throws BroadcastException;
+
     /**
      * Start transmission.
      *
-     * @param type       {@link TransmissionType}
-     * @param device     {@link javax.media.CaptureDeviceInfo}
+     * @param device     {@link ICaptureDevice}
      * @param connection {@link IConnection}
      * @throws BroadcastException
      */
-    void start(TransmissionType type, CaptureDeviceInfo device, IConnection connection) throws BroadcastException;
+    void start(ICaptureDevice device, IConnection connection) throws BroadcastException;
+
 
     /**
-     * Start transmission.
+     * Forced stop broadcast for current device and connection.
+     * Using this method is dangerous. Better use stop() method.
      *
-     * @param type       {@link TransmissionType}
-     * @param device     device
+     * @param device     {@link ICaptureDevice}
      * @param connection {@link IConnection}
      */
-    void start(TransmissionType type, String device, IConnection connection) throws BroadcastException;
+    void stop(ICaptureDevice device, IConnection connection) throws BroadcastException;
 
     /**
-     * Stop current transmission.
-     *
-     * @param type       {@link TransmissionType}
-     * @param connection {@link IConnection}
+     * Stop the broadcast. If the current broadcast has no one subscriber than stop broadcast.
      */
-    void stop(TransmissionType type, IConnection connection) throws BroadcastException;
-
-    /**
-     * Stop all transmissions.
-     */
-    void stop();
+    void stop() throws BroadcastException;
 }

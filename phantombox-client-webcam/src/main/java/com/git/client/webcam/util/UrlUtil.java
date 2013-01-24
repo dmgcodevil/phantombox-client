@@ -1,6 +1,6 @@
 package com.git.client.webcam.util;
 
-import com.git.client.api.webcam.transmitter.TransmissionType;
+import com.git.client.api.domain.DeviceType;
 
 /**
  * Url utils.
@@ -24,11 +24,11 @@ public class UrlUtil {
      * @param trType    (rtp, file)
      * @param ipAddress ip address
      * @param port      port
-     * @param type      {@@link TransmissionType}
+     * @param type      {@@link DeviceType}
      * @return url
      */
     public static String buildUrl(String trType, String ipAddress,
-                                  int port, TransmissionType type) {
+                                  int port, DeviceType type) {
         StringBuilder builder = new StringBuilder(trType);
         builder.append(ipAddress);
         builder.append(":");

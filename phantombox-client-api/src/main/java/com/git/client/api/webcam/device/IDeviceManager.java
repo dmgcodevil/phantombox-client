@@ -1,6 +1,7 @@
 package com.git.client.api.webcam.device;
 
 
+import com.git.client.api.domain.ICaptureDevice;
 import com.git.client.api.exception.DeviceNotFoundException;
 
 import java.util.Map;
@@ -33,25 +34,21 @@ public interface IDeviceManager {
      *                key - device name
      *                value -  {@link CaptureDeviceInfo}
      */
-    public void setDevices(Map<String, CaptureDeviceInfo> devices);
+    public void setDevice(Map<String, CaptureDeviceInfo> devices);
 
     /**
-     * Gets audio devices.
+     * Gets audio device.
      *
-     * @return Map
-     *         key - device name
-     *         value -  {@link CaptureDeviceInfo}
+     * @return {@link ICaptureDevice}
      */
-    public Map<String, CaptureDeviceInfo> getAudioDevices();
+    public ICaptureDevice getAudioDevice();
 
     /**
-     * Gets video devices.
+     * Gets video device.
      *
-     * @return Map
-     *         key - device name
-     *         value -  {@link CaptureDeviceInfo}
+     * @return {@link ICaptureDevice}
      */
-    public Map<String, CaptureDeviceInfo> getVideoDevices();
+    public ICaptureDevice getVideoDevice();
 
 
     /**

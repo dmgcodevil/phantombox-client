@@ -1,9 +1,8 @@
 package com.git.client.webcam.broadcast;
 
-import static com.git.client.api.webcam.transmitter.TransmissionType.VIDEO;
+import com.git.client.api.domain.ICaptureDevice;
 import com.git.client.api.exception.BroadcastException;
 import com.git.client.api.exception.DataSourceCreationException;
-import com.git.client.api.exception.DeviceNotFoundException;
 import com.git.client.api.exception.MediaLocatorCreationException;
 import com.git.client.api.exception.ProcessorCreationException;
 import com.git.client.api.exception.TransmitterException;
@@ -13,19 +12,17 @@ import com.git.client.api.webcam.device.IDeviceManager;
 import com.git.client.api.webcam.locator.IMediaLocatorFactory;
 import com.git.client.api.webcam.processor.IProcessorFactory;
 import com.git.client.api.webcam.transmitter.ITransmitterFactory;
-import com.git.client.api.webcam.transmitter.TransmissionType;
 import com.git.client.webcam.datasource.DataSourceFactory;
 import com.git.client.webcam.device.DeviceManager;
 import com.git.client.webcam.locator.MediaLocatorFactory;
 import com.git.client.webcam.processor.ProcessorFactory;
 import com.git.client.webcam.transmitter.TransmitterFactoryDataSink;
 import com.git.domain.api.IConnection;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
+import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.media.CaptureDeviceInfo;
+import java.util.HashMap;
 import javax.media.Processor;
 import javax.media.protocol.DataSource;
 
@@ -48,11 +45,15 @@ public class Broadcaster implements IBroadcaster {
 
     private IMediaLocatorFactory mediaLocatorFactory;
 
-    private Table<TransmissionType, IConnection, Processor> processorPool = HashBasedTable.create();
+    private HashMap<ICaptureDevice, Processor> processorPool = new HashMap();
+
+    private ThreadLocal<Long> countSubscribers = new ThreadLocal();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Broadcaster.class);
 
     private static volatile Broadcaster instance;
+
+    private static final Long EMPTY_SUBSCRIBERS = 0L;
 
     /**
      * Default constructor.
@@ -65,6 +66,7 @@ public class Broadcaster implements IBroadcaster {
         this.mediaLocatorFactory = new MediaLocatorFactory();
 
         this.deviceManager.initDevices();
+        countSubscribers.set(EMPTY_SUBSCRIBERS);
     }
 
     public static Broadcaster getInstance() {
@@ -164,17 +166,32 @@ public class Broadcaster implements IBroadcaster {
      * {@inheritDoc}
      */
     @Override
+    public void start(IConnection connection) throws BroadcastException {
+        ICaptureDevice videoDevice = deviceManager.getVideoDevice();
+        LOGGER.info("device {} successfully loaded", videoDevice);
+        ICaptureDevice audioDevice = deviceManager.getAudioDevice();
+        LOGGER.info("device {} successfully loaded", audioDevice);
+
+        LOGGER.info("Start video broadcast", audioDevice);
+        start(videoDevice, connection);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     @Deprecated
-    public void start(TransmissionType type, CaptureDeviceInfo device, IConnection connection)
+    public void start(ICaptureDevice device, IConnection connection)
         throws BroadcastException {
         Processor processor;
-        if (!processorPool.contains(type, connection)) {
+        if (!processorPool.containsKey(device)) {
             processor = createProcessor(device);
-            processorPool.put(type, connection, processor);
+            processorPool.put(device, processor);
         } else {
-            processor = processorPool.get(type, connection);
+            processor = processorPool.get(device);
         }
-        start(processor, type, connection);
+        start(processor, device, connection);
+        addSubscriber();
     }
 
 
@@ -182,29 +199,17 @@ public class Broadcaster implements IBroadcaster {
      * {@inheritDoc}
      */
     @Override
-    public void start(TransmissionType type, String device, IConnection connection)
-        throws BroadcastException {
-        try {
-            CaptureDeviceInfo deviceInfo = deviceManager.getCaptureDeviceInfo(device);
-            start(type, deviceInfo, connection);
-        } catch (DeviceNotFoundException e) {
-            throw new BroadcastException("device not found", e);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void stop(TransmissionType type, IConnection connection) throws BroadcastException {
+    @Deprecated
+    public void stop(ICaptureDevice device, IConnection connection) throws BroadcastException {
         if (!processorPool.isEmpty()) {
-            Processor processor = processorPool.get(type, connection);
+            Processor processor = processorPool.get(device);
             if (processor != null) {
-                disposeTransmitter(type, connection);
+                disposeTransmitter(device, connection);
                 processor.stop();
-                LOGGER.info("Transmission " + type.getValue() + "for connection: " + connection + " is stopped.");
+                countSubscribers.remove();
+                LOGGER.info("Broadcast for device" + device + ", connection: " + connection + " is stopped.");
             } else {
-                throw new BroadcastException("Transmission " + type.getValue() + "for connection: " + connection + " not running.");
+                throw new BroadcastException("Failed to stop Broadcast for device" + device + ", connection: " + connection);
             }
         }
     }
@@ -214,20 +219,21 @@ public class Broadcaster implements IBroadcaster {
      * {@inheritDoc}
      */
     @Override
-    @Deprecated
-    public void stop() {
-        if (!processorPool.isEmpty()) {
+    public void stop() throws BroadcastException {
+        if (EMPTY_SUBSCRIBERS.equals(countSubscribers.get()) && MapUtils.isNotEmpty(processorPool)) {
             for (Processor processor : processorPool.values()) {
                 processor.stop();
             }
+        } else {
+            removeSubscriber();
         }
     }
 
-    private Processor createProcessor(CaptureDeviceInfo device) throws BroadcastException {
+    private Processor createProcessor(ICaptureDevice captureDevice) throws BroadcastException {
         Processor processor;
         try {
             DataSource dataSource = dataSourceFactory.createDataSource(
-                mediaLocatorFactory.createMediaLocator(device));
+                mediaLocatorFactory.createMediaLocator(captureDevice.getCaptureDeviceInfo()));
             processor = processorFactory.createProcessor(dataSource);
         } catch (MediaLocatorCreationException e) {
             throw new BroadcastException("failed create MediaLocator", e);
@@ -239,19 +245,14 @@ public class Broadcaster implements IBroadcaster {
         return processor;
     }
 
-    private void start(Processor processor, TransmissionType type, IConnection connection)
+    private void start(Processor processor, ICaptureDevice device, IConnection connection)
         throws BroadcastException {
         try {
             int port;
-            LOGGER.info("Broadcaster::start(); Create transmitter. type={}, connection = {},video_port = {} ",
-                new String[]{type.getValue(), connection.toString()});
-            // TODO move it to transmitterFactory
-            if (VIDEO.equals(type)) {
-                port = connection.getVideoPort();
-            } else {
-                port = connection.getAudioPort();
-            }
-            transmitterFactory.createTransmitter(processor.getDataOutput(), connection.getIpAddress(), port, type);
+            LOGGER.info("Broadcaster::start(); Create transmitter. device={}, connection = {}",
+                new String[]{device.getCaptureDeviceInfo().getName(), connection.toString()});
+
+            transmitterFactory.createTransmitter(processor.getDataOutput(), connection, device);
             processor.start();
             LOGGER.info("Broadcaster::start(); Processor is started.");
             LOGGER.info("Broadcaster::start(); Started transferring data.");
@@ -261,20 +262,25 @@ public class Broadcaster implements IBroadcaster {
 
     }
 
-    // TODO move it to transmitterFactory
-    private void disposeTransmitter(TransmissionType type, IConnection connection) throws BroadcastException {
-        int port;
-
-        if (VIDEO.equals(type)) {
-            port = connection.getVideoPort();
-        } else {
-            port = connection.getAudioPort();
-        }
+    private void disposeTransmitter(ICaptureDevice device, IConnection connection) throws BroadcastException {
         try {
-            transmitterFactory.disposeTransmitter(connection.getIpAddress(), port, type);
+            transmitterFactory.disposeTransmitter(connection, device);
         } catch (TransmitterException e) {
-            throw new BroadcastException("Transmission " + type.getValue() + "for connection: " + connection + " not running.", e);
+            throw new BroadcastException("Transmission device" + device + ", connection: " + connection + " not running.", e);
         }
 
+    }
+
+    private synchronized void addSubscriber() {
+        Long currentCount = countSubscribers.get();
+        currentCount++;
+        countSubscribers.set(currentCount);
+    }
+
+    private synchronized void removeSubscriber() {
+        Long currentCount = countSubscribers.get();
+        if (currentCount > EMPTY_SUBSCRIBERS)
+            currentCount--;
+        countSubscribers.set(currentCount);
     }
 }

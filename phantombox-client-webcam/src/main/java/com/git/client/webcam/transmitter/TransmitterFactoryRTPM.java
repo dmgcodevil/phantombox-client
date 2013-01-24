@@ -1,10 +1,13 @@
 package com.git.client.webcam.transmitter;
 
 
+import com.git.client.api.domain.DeviceType;
+import com.git.client.api.domain.ICaptureDevice;
 import com.git.client.api.exception.TransmitterException;
 import com.git.client.api.webcam.transmitter.ITransmitterFactory;
 import com.git.client.api.webcam.transmitter.TransmissionType;
 import com.git.client.webcam.util.UrlUtil;
+import com.git.domain.api.IConnection;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -51,8 +54,8 @@ public class TransmitterFactoryRTPM implements ITransmitterFactory {
      * {@inheritDoc}
      */
     @Override
-    public void createTransmitter(DataSource dataOutput, String ipAddress, int port,
-                                  TransmissionType type) throws TransmitterException {
+    public void createTransmitter(DataSource dataOutput, IConnection connection, ICaptureDevice device)
+        throws TransmitterException {
 
         // create the RTP Manager
         RTPManager rtpManager = RTPManager.newInstance();
@@ -73,9 +76,9 @@ public class TransmitterFactoryRTPM implements ITransmitterFactory {
             // specify the remote endpoint of this unicast session
             // the address string and port numbers in the following lines
             // need to be replaced with your values.
-            InetAddress inetAddress = InetAddress.getByName(ipAddress);
+            InetAddress inetAddress = InetAddress.getByName(connection.getIpAddress());
 
-            SessionAddress remoteAddress = new SessionAddress(inetAddress, port);
+            SessionAddress remoteAddress = new SessionAddress(inetAddress, getPort(connection, device));
 
             // open the connection
             rtpManager.addTarget(remoteAddress);
@@ -83,7 +86,7 @@ public class TransmitterFactoryRTPM implements ITransmitterFactory {
             SendStream sendStream = rtpManager.createSendStream(dataOutput, 1);
             sendStream.start();
 
-            managers.put(UrlUtil.buildUrl(UrlUtil.RTP, ipAddress, port, type),
+            managers.put(buildUrl(connection, device),
                 new ConnectionInfo(rtpManager, remoteAddress));
 
         } catch (InvalidSessionAddressException ex) {
@@ -101,11 +104,10 @@ public class TransmitterFactoryRTPM implements ITransmitterFactory {
      * {@inheritDoc}
      */
     @Override
-    public void disposeTransmitter(String ipAddress, int port, TransmissionType type)
+    public void disposeTransmitter(IConnection connection, ICaptureDevice device)
         throws TransmitterException {
         if (MapUtils.isNotEmpty(managers)) {
-            ConnectionInfo connectionInfo = managers.remove(UrlUtil.buildUrl(UrlUtil.RTP, ipAddress,
-                port, type));
+            ConnectionInfo connectionInfo = managers.remove(buildUrl(connection, device));
             if (connectionInfo != null) {
                 // close the connection if no longer needed.
                 try {
@@ -121,6 +123,25 @@ public class TransmitterFactoryRTPM implements ITransmitterFactory {
                 throw new TransmitterException("Connection not exist.");
             }
         }
+    }
+
+    @Override
+    public void disposeTransmitter() throws TransmitterException {
+        // TODO implement it
+    }
+
+    private String buildUrl(IConnection connection, ICaptureDevice device) {
+        return UrlUtil.buildUrl(UrlUtil.RTP, connection.getIpAddress(), getPort(connection, device), device.getDeviceType());
+    }
+
+    private int getPort(IConnection connection, ICaptureDevice device) {
+        int port;
+        if (DeviceType.AUDIO.equals(device.getDeviceType())) {
+            port = connection.getAudioPort();
+        } else {
+            port = connection.getVideoPort();
+        }
+        return port;
     }
 
     private class ConnectionInfo {

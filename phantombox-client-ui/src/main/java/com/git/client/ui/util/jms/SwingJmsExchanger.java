@@ -1,11 +1,9 @@
 package com.git.client.ui.util.jms;
 
-import static com.git.client.api.domain.Constants.VFM_WDM;
 import com.git.broker.api.domain.IJmsExchanger;
 import com.git.broker.impl.domain.AbstractJmsExchanger;
 import com.git.client.api.exception.BroadcastException;
 import com.git.client.api.webcam.broadcast.IBroadcaster;
-import static com.git.client.api.webcam.transmitter.TransmissionType.VIDEO;
 import com.git.client.ui.frame.VideoFrame;
 import com.git.client.webcam.broadcast.Broadcaster;
 import com.git.domain.api.IConnection;
@@ -32,11 +30,11 @@ public class SwingJmsExchanger extends AbstractJmsExchanger implements IJmsExcha
             @Override
             public void run() {
                 try {
-                    broadcaster.start(VIDEO, VFM_WDM, connection);
+                    broadcaster.start(connection);
                     LOGGER.info("-------- START VIDEO BROADCAST --------");
                     // audioSender.start(TransmissionType.AUDIO, DSC, connection.getIpAddress(), connection.getAudioPort());
                     //  LOGGER.info("-------- START AUDIO BROADCAST --------");
-                } catch (BroadcastException e) {
+                } catch(BroadcastException e) {
                     LOGGER.error("-------- FAILED BROADCAST --------");
                     LOGGER.error(ExceptionUtils.getMessage(e));
                 }
@@ -60,8 +58,9 @@ public class SwingJmsExchanger extends AbstractJmsExchanger implements IJmsExcha
     @Override
     public void onCallReject(IConnection connection) {
         try {
-            broadcaster.stop(VIDEO, connection);
-        } catch (BroadcastException e) {
+            // try to stop broadcast
+            broadcaster.stop();
+        } catch(BroadcastException e) {
             LOGGER.error("-------- FAILED TO STOP BROADCAST --------");
             LOGGER.error(ExceptionUtils.getMessage(e));
         }

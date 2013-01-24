@@ -1,7 +1,10 @@
 package com.git.client.webcam.device;
 
+import com.git.client.api.domain.DeviceType;
+import com.git.client.api.domain.ICaptureDevice;
 import com.git.client.api.exception.DeviceNotFoundException;
 import com.git.client.api.webcam.device.IDeviceManager;
+import com.git.client.domain.CaptureDevice;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
@@ -16,6 +19,7 @@ import java.util.Set;
 import java.util.Vector;
 import javax.media.CaptureDeviceInfo;
 import javax.media.CaptureDeviceManager;
+import javax.media.Format;
 
 /**
  * {@link IDeviceManager} interface implementation.
@@ -27,11 +31,14 @@ import javax.media.CaptureDeviceManager;
  */
 public class DeviceManager implements IDeviceManager {
 
-    private Map<String, CaptureDeviceInfo> devices = new HashMap();
 
-    private Map<String, CaptureDeviceInfo> audioDevices = new HashMap();
+    private Map<String, CaptureDeviceInfo> devices;
 
-    private Map<String, CaptureDeviceInfo> videoDevices = new HashMap();
+    private ICaptureDevice audioDevice;
+
+    private ICaptureDevice videoDevice;
+
+    private static final Format ALL_DEVICES = null;
 
     // TODO move it to properties file or something that
     private static final String JS_AUDIO_CAPTURE = "JavaSound audio capture";
@@ -65,7 +72,7 @@ public class DeviceManager implements IDeviceManager {
      * {@inheritDoc}
      */
     @Override
-    public void setDevices(Map<String, CaptureDeviceInfo> devices) {
+    public void setDevice(Map<String, CaptureDeviceInfo> devices) {
         this.devices = devices;
     }
 
@@ -73,16 +80,16 @@ public class DeviceManager implements IDeviceManager {
      * {@inheritDoc}
      */
     @Override
-    public Map<String, CaptureDeviceInfo> getAudioDevices() {
-        return audioDevices;
+    public ICaptureDevice getAudioDevice() {
+        return audioDevice;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Map<String, CaptureDeviceInfo> getVideoDevices() {
-        return videoDevices;
+    public ICaptureDevice getVideoDevice() {
+        return videoDevice;
     }
 
 
@@ -91,8 +98,8 @@ public class DeviceManager implements IDeviceManager {
      */
     @Override
     public void initDevices() {
-        devices.clear();
-        Vector deviceListVector = CaptureDeviceManager.getDeviceList(null);
+        devices = new HashMap();
+        Vector deviceListVector = CaptureDeviceManager.getDeviceList(ALL_DEVICES);
         if (CollectionUtils.isNotEmpty(deviceListVector)) {
             for (Object device : deviceListVector) {
                 if (device instanceof CaptureDeviceInfo) {
@@ -101,22 +108,21 @@ public class DeviceManager implements IDeviceManager {
                 }
             }
 
-            audioDevices = new HashMap();
-            videoDevices = new HashMap();
+            // TODO load current devices from properties
             if (MapUtils.isNotEmpty(devices)) {
-                for (String device : devices.keySet()) {
-                    // TODO refine it
-                    if (DEF_AUDIO_DEVICES.contains(device)) {
-                        audioDevices.put(device, devices.get(device));
-                    } else if (DEF_VIDEO_DEVICES.contains(device)) {
-                        videoDevices.put(device, devices.get(device));
-                    }
+                if (devices.containsKey(VFM_WDM)) {
+                    videoDevice = new CaptureDevice(DeviceType.VIDEO, devices.get(VFM_WDM));
+                }
+
+                if (devices.containsKey(DS_AUDIO_CAPTURE)) {
+                    audioDevice = new CaptureDevice(DeviceType.AUDIO, devices.get(DS_AUDIO_CAPTURE));
                 }
             }
 
+
             LOGGER.info("Was found " + deviceListVector.size() + " devices.");
-            LOGGER.info(audioDevices.size() + " audio devices.");
-            LOGGER.info(videoDevices.size() + " video devices.");
+            LOGGER.info(audioDevice + " current audio device.");
+            LOGGER.info(videoDevice + " current video device.");
 
         } else {
             LOGGER.info("No one device was found");

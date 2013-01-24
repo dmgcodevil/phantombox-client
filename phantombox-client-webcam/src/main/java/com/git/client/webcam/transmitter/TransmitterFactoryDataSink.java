@@ -1,10 +1,12 @@
 package com.git.client.webcam.transmitter;
 
 
+import com.git.client.api.domain.DeviceType;
+import com.git.client.api.domain.ICaptureDevice;
 import com.git.client.api.exception.TransmitterException;
 import com.git.client.api.webcam.transmitter.ITransmitterFactory;
-import com.git.client.api.webcam.transmitter.TransmissionType;
 import com.git.client.webcam.util.UrlUtil;
+import com.git.domain.api.IConnection;
 import org.apache.commons.collections.MapUtils;
 
 import java.io.IOException;
@@ -32,10 +34,11 @@ public class TransmitterFactoryDataSink implements ITransmitterFactory {
      * {@inheritDoc}
      */
     @Override
-    public void createTransmitter(DataSource dataOutput, String ipAddress, int port,
-                                  TransmissionType type) throws TransmitterException {
-        DataSink rtptransmitter = null;
-        String rtpURL = UrlUtil.buildUrl(UrlUtil.RTP, ipAddress, port, type);
+    public void createTransmitter(DataSource dataOutput, IConnection connection, ICaptureDevice device)
+        throws TransmitterException {
+        DataSink rtptransmitter;
+
+        String rtpURL = buildUrl(connection, device);
         MediaLocator outputLocator = new MediaLocator(rtpURL);
 
         // Create a data sink, open it and start transmission. It will wait
@@ -60,11 +63,11 @@ public class TransmitterFactoryDataSink implements ITransmitterFactory {
      * {@inheritDoc}
      */
     @Override
-    public void disposeTransmitter(String ipAddress, int port, TransmissionType type)
+    @Deprecated
+    public void disposeTransmitter(IConnection connection, ICaptureDevice device)
         throws TransmitterException {
         if (MapUtils.isNotEmpty(dataSinkMap)) {
-            DataSink rtptransmitter = dataSinkMap.remove(UrlUtil.buildUrl(UrlUtil.RTP, ipAddress,
-                port, type));
+            DataSink rtptransmitter = dataSinkMap.remove(buildUrl(connection, device));
             if (rtptransmitter != null) {
                 try {
                     rtptransmitter.stop();
@@ -77,6 +80,32 @@ public class TransmitterFactoryDataSink implements ITransmitterFactory {
             }
 
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void disposeTransmitter() throws TransmitterException {
+        if (MapUtils.isNotEmpty(dataSinkMap)) {
+            for (Map.Entry<String, DataSink> sinkEntry : dataSinkMap.entrySet()) {
+                try {
+                    sinkEntry.getValue().stop();
+                } catch (IOException e) {
+                    throw new TransmitterException("Failed stop transmitter for: " + sinkEntry.getKey());
+                }
+            }
+        }
+    }
+
+    private String buildUrl(IConnection connection, ICaptureDevice device) {
+        int port;
+        if (DeviceType.AUDIO.equals(device.getDeviceType())) {
+            port = connection.getAudioPort();
+        } else {
+            port = connection.getVideoPort();
+        }
+        return UrlUtil.buildUrl(UrlUtil.RTP, connection.getIpAddress(), port, device.getDeviceType());
     }
 
 }
