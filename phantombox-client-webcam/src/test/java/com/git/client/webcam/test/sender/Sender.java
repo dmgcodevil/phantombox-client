@@ -1,19 +1,12 @@
 package com.git.client.webcam.test.sender;
 
 
-import com.git.client.api.exception.DataSourceCreationException;
-import com.git.client.api.exception.DeviceNotFoundException;
-import com.git.client.api.exception.MediaLocatorCreationException;
-import com.git.client.api.exception.ProcessorCreationException;
-import com.git.client.api.exception.TransmitterException;
 import com.git.client.api.webcam.datasource.IDataSourceFactory;
 import com.git.client.api.webcam.device.IDeviceManager;
 import com.git.client.api.webcam.locator.IMediaLocatorFactory;
 import com.git.client.api.webcam.processor.IProcessorFactory;
 import com.git.client.api.webcam.transmitter.ITransmitterFactory;
 import com.git.client.api.webcam.transmitter.TransmissionType;
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.media.CaptureDeviceInfo;
 import javax.media.Processor;
-import javax.media.protocol.DataSource;
 
 /**
  * {@link ISender} implementation.
@@ -162,6 +154,5 @@ public class Sender implements ISender {
     public void stop() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
-
 
 }

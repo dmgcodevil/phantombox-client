@@ -34,7 +34,7 @@ public interface IDeviceManager {
      *                key - device name
      *                value -  {@link CaptureDeviceInfo}
      */
-    public void setDevice(Map<String, CaptureDeviceInfo> devices);
+    public void setDevices(Map<String, CaptureDeviceInfo> devices);
 
     /**
      * Gets audio device.

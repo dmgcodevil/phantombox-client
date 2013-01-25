@@ -68,7 +68,7 @@ public class DeviceManager implements IDeviceManager {
      * {@inheritDoc}
      */
     @Override
-    public void setDevice(Map<String, CaptureDeviceInfo> devices) {
+    public void setDevices(Map<String, CaptureDeviceInfo> devices) {
         this.devices = devices;
     }
 
