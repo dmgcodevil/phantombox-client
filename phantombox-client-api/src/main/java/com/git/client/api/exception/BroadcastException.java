@@ -28,6 +28,15 @@ public class BroadcastException extends Exception {
     /**
      * Constructor with parameters.
      *
+     * @param cause {@link Throwable}
+     */
+    public BroadcastException(Throwable cause) {
+        super(cause);
+    }
+
+    /**
+     * Constructor with parameters.
+     *
      * @param message message
      * @param cause   {@link Throwable}
      */

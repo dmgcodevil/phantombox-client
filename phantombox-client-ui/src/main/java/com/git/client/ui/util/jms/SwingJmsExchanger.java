@@ -34,7 +34,7 @@ public class SwingJmsExchanger extends AbstractJmsExchanger implements IJmsExcha
                     LOGGER.info("-------- START VIDEO BROADCAST --------");
                     // audioSender.start(TransmissionType.AUDIO, DSC, connection.getIpAddress(), connection.getAudioPort());
                     //  LOGGER.info("-------- START AUDIO BROADCAST --------");
-                } catch(BroadcastException e) {
+                } catch (BroadcastException e) {
                     LOGGER.error("-------- FAILED BROADCAST --------");
                     LOGGER.error(ExceptionUtils.getMessage(e));
                 }
@@ -53,6 +53,8 @@ public class SwingJmsExchanger extends AbstractJmsExchanger implements IJmsExcha
         LOGGER.info("-------- LISTEN {} --------", connection.toString());
         VideoFrame videoFrame = new VideoFrame(video.toString());
         videoFrame.setVisible(true);
+
+        //  TODO crate Call frame and add to CallFrameManager
     }
 
     @Override
@@ -60,7 +62,7 @@ public class SwingJmsExchanger extends AbstractJmsExchanger implements IJmsExcha
         try {
             // try to stop broadcast
             broadcaster.stop();
-        } catch(BroadcastException e) {
+        } catch (BroadcastException e) {
             LOGGER.error("-------- FAILED TO STOP BROADCAST --------");
             LOGGER.error(ExceptionUtils.getMessage(e));
         }

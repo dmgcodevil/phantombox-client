@@ -229,8 +229,15 @@ public class Broadcaster implements IBroadcaster {
     public void stop() throws BroadcastException {
         if (EMPTY_SUBSCRIBERS.equals(countSubscribers.get()) &&
             MapUtils.isNotEmpty(processorPool)) {
-            for (Processor processor : processorPool.values()) {
-                processor.stop();
+            try {
+                // try to dispose all transmissions
+                transmitterFactory.disposeTransmitter();
+
+                for (Processor processor : processorPool.values()) {
+                    processor.stop();
+                }
+            } catch (TransmitterException e) {
+                throw new BroadcastException(e);
             }
         } else {
             removeSubscriber();
