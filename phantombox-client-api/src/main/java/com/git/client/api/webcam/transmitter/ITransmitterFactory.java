@@ -39,7 +39,7 @@ public interface ITransmitterFactory {
     /**
      * Dispose transmitter.
      *
-     * @throws TransmitterException
+     * @throws TransmitterException {@link TransmitterException}
      */
     void disposeTransmitter() throws TransmitterException;
 }

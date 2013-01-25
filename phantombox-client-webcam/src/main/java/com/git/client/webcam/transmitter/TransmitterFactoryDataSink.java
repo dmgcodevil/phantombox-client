@@ -34,7 +34,8 @@ public class TransmitterFactoryDataSink implements ITransmitterFactory {
      * {@inheritDoc}
      */
     @Override
-    public void createTransmitter(DataSource dataOutput, IConnection connection, ICaptureDevice device)
+    public void createTransmitter(DataSource dataOutput, IConnection connection,
+                                  ICaptureDevice device)
         throws TransmitterException {
         DataSink rtptransmitter;
 
@@ -50,7 +51,8 @@ public class TransmitterFactoryDataSink implements ITransmitterFactory {
             rtptransmitter.open();
             rtptransmitter.start();
             dataOutput.start();
-            dataSinkMap.put(rtpURL, rtptransmitter); // TODO if DataSink already in pull throw TransmitterException ?
+            // TODO if DataSink already in pull throw TransmitterException ?
+            dataSinkMap.put(rtpURL, rtptransmitter);
         } catch (MediaException me) {
             throw new TransmitterException("Couldn't create RTP data sink", me);
         } catch (IOException ioe) {
@@ -92,7 +94,8 @@ public class TransmitterFactoryDataSink implements ITransmitterFactory {
                 try {
                     sinkEntry.getValue().stop();
                 } catch (IOException e) {
-                    throw new TransmitterException("Failed stop transmitter for: " + sinkEntry.getKey());
+                    throw new TransmitterException("Failed stop transmitter for: " +
+                        sinkEntry.getKey());
                 }
             }
         }
@@ -105,7 +108,8 @@ public class TransmitterFactoryDataSink implements ITransmitterFactory {
         } else {
             port = connection.getVideoPort();
         }
-        return UrlUtil.buildUrl(UrlUtil.RTP, connection.getIpAddress(), port, device.getDeviceType());
+        return UrlUtil.buildUrl(UrlUtil.RTP, connection.getIpAddress(), port,
+            device.getDeviceType());
     }
 
 }

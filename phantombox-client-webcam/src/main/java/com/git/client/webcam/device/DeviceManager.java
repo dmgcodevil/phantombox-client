@@ -1,5 +1,8 @@
 package com.git.client.webcam.device;
 
+import static com.git.domain.api.Constants.DSC;
+import static com.git.domain.api.Constants.JSC;
+import static com.git.domain.api.Constants.VFM_WDM;
 import com.git.client.api.domain.DeviceType;
 import com.git.client.api.domain.ICaptureDevice;
 import com.git.client.api.exception.DeviceNotFoundException;
@@ -40,13 +43,6 @@ public class DeviceManager implements IDeviceManager {
 
     private static final Format ALL_DEVICES = null;
 
-    // TODO move it to properties file or something that
-    private static final String JS_AUDIO_CAPTURE = "JavaSound audio capture";
-
-    private static final String DS_AUDIO_CAPTURE = "DirectSoundCapture";
-
-    private static final String VFM_WDM = "vfw:Microsoft WDM Image Capture (Win32):0";
-
     private static final Set<String> DEF_AUDIO_DEVICES = new HashSet();
 
     private static final Set<String> DEF_VIDEO_DEVICES = new HashSet();
@@ -54,8 +50,8 @@ public class DeviceManager implements IDeviceManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceManager.class);
 
     static {
-        DEF_AUDIO_DEVICES.add(JS_AUDIO_CAPTURE);
-        DEF_AUDIO_DEVICES.add(DS_AUDIO_CAPTURE);
+        DEF_AUDIO_DEVICES.add(JSC);
+        DEF_AUDIO_DEVICES.add(DSC);
         DEF_VIDEO_DEVICES.add(VFM_WDM);
     }
 
@@ -114,8 +110,8 @@ public class DeviceManager implements IDeviceManager {
                     videoDevice = new CaptureDevice(DeviceType.VIDEO, devices.get(VFM_WDM));
                 }
 
-                if (devices.containsKey(DS_AUDIO_CAPTURE)) {
-                    audioDevice = new CaptureDevice(DeviceType.AUDIO, devices.get(DS_AUDIO_CAPTURE));
+                if (devices.containsKey(DSC)) {
+                    audioDevice = new CaptureDevice(DeviceType.AUDIO, devices.get(DSC));
                 }
             }
 

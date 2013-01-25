@@ -25,6 +25,12 @@ public class BroadcastException extends Exception {
         super(message);
     }
 
+    /**
+     * Constructor with parameters.
+     *
+     * @param message message
+     * @param cause   {@link Throwable}
+     */
     public BroadcastException(String message, Throwable cause) {
         super(message, cause);
     }

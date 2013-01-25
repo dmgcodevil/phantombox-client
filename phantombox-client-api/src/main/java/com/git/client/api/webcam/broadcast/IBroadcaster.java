@@ -7,10 +7,7 @@ import com.git.client.api.webcam.device.IDeviceManager;
 import com.git.client.api.webcam.locator.IMediaLocatorFactory;
 import com.git.client.api.webcam.processor.IProcessorFactory;
 import com.git.client.api.webcam.transmitter.ITransmitterFactory;
-import com.git.client.api.webcam.transmitter.TransmissionType;
 import com.git.domain.api.IConnection;
-
-import javax.media.CaptureDeviceInfo;
 
 /**
  * Class description.
@@ -91,11 +88,11 @@ public interface IBroadcaster {
      */
     void setMediaLocatorFactory(IMediaLocatorFactory mediaLocatorFactory);
 
-
     /**
      * Start broadcasting.
      *
      * @param connection {@link IConnection}
+     * @throws BroadcastException {@link BroadcastException}
      */
     void start(IConnection connection) throws BroadcastException;
 
@@ -104,7 +101,7 @@ public interface IBroadcaster {
      *
      * @param device     {@link ICaptureDevice}
      * @param connection {@link IConnection}
-     * @throws BroadcastException
+     * @throws BroadcastException {@link BroadcastException}
      */
     void start(ICaptureDevice device, IConnection connection) throws BroadcastException;
 
@@ -115,11 +112,14 @@ public interface IBroadcaster {
      *
      * @param device     {@link ICaptureDevice}
      * @param connection {@link IConnection}
+     * @throws BroadcastException {@link BroadcastException}
      */
     void stop(ICaptureDevice device, IConnection connection) throws BroadcastException;
 
     /**
      * Stop the broadcast. If the current broadcast has no one subscriber than stop broadcast.
+     *
+     * @throws BroadcastException {@link BroadcastException}
      */
     void stop() throws BroadcastException;
 }

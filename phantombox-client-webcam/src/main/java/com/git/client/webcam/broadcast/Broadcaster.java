@@ -51,7 +51,7 @@ public class Broadcaster implements IBroadcaster {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Broadcaster.class);
 
-    private static volatile Broadcaster instance;
+    private static volatile Broadcaster sInstance;
 
     private static final Long EMPTY_SUBSCRIBERS = 0L;
 
@@ -69,13 +69,18 @@ public class Broadcaster implements IBroadcaster {
         countSubscribers.set(EMPTY_SUBSCRIBERS);
     }
 
+    /**
+     * Gets instance.
+     *
+     * @return {@link Broadcaster}
+     */
     public static Broadcaster getInstance() {
-        Broadcaster localInstance = instance;
+        Broadcaster localInstance = sInstance;
         if (localInstance == null) {
             synchronized (Broadcaster.class) {
-                localInstance = instance;
+                localInstance = sInstance;
                 if (localInstance == null) {
-                    instance = localInstance = new Broadcaster();
+                    sInstance = localInstance = new Broadcaster();
                 }
             }
         }
@@ -207,9 +212,11 @@ public class Broadcaster implements IBroadcaster {
                 disposeTransmitter(device, connection);
                 processor.stop();
                 countSubscribers.remove();
-                LOGGER.info("Broadcast for device" + device + ", connection: " + connection + " is stopped.");
+                LOGGER.info("Broadcast for device" + device + ", connection: " +
+                    connection + " is stopped.");
             } else {
-                throw new BroadcastException("Failed to stop Broadcast for device" + device + ", connection: " + connection);
+                throw new BroadcastException("Failed to stop Broadcast for device" +
+                    device + ", connection: " + connection);
             }
         }
     }
@@ -220,7 +227,8 @@ public class Broadcaster implements IBroadcaster {
      */
     @Override
     public void stop() throws BroadcastException {
-        if (EMPTY_SUBSCRIBERS.equals(countSubscribers.get()) && MapUtils.isNotEmpty(processorPool)) {
+        if (EMPTY_SUBSCRIBERS.equals(countSubscribers.get()) &&
+            MapUtils.isNotEmpty(processorPool)) {
             for (Processor processor : processorPool.values()) {
                 processor.stop();
             }
@@ -262,11 +270,13 @@ public class Broadcaster implements IBroadcaster {
 
     }
 
-    private void disposeTransmitter(ICaptureDevice device, IConnection connection) throws BroadcastException {
+    private void disposeTransmitter(ICaptureDevice device, IConnection connection)
+        throws BroadcastException {
         try {
             transmitterFactory.disposeTransmitter(connection, device);
         } catch (TransmitterException e) {
-            throw new BroadcastException("Transmission device" + device + ", connection: " + connection + " not running.", e);
+            throw new BroadcastException("Transmission device" + device + ", connection: " +
+                connection + " not running.", e);
         }
 
     }
@@ -279,8 +289,9 @@ public class Broadcaster implements IBroadcaster {
 
     private synchronized void removeSubscriber() {
         Long currentCount = countSubscribers.get();
-        if (currentCount > EMPTY_SUBSCRIBERS)
+        if (currentCount > EMPTY_SUBSCRIBERS) {
             currentCount--;
+        }
         countSubscribers.set(currentCount);
     }
 }

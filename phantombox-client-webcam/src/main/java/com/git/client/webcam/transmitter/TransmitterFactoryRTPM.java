@@ -5,7 +5,6 @@ import com.git.client.api.domain.DeviceType;
 import com.git.client.api.domain.ICaptureDevice;
 import com.git.client.api.exception.TransmitterException;
 import com.git.client.api.webcam.transmitter.ITransmitterFactory;
-import com.git.client.api.webcam.transmitter.TransmissionType;
 import com.git.client.webcam.util.UrlUtil;
 import com.git.domain.api.IConnection;
 import org.apache.commons.collections.MapUtils;
@@ -54,7 +53,8 @@ public class TransmitterFactoryRTPM implements ITransmitterFactory {
      * {@inheritDoc}
      */
     @Override
-    public void createTransmitter(DataSource dataOutput, IConnection connection, ICaptureDevice device)
+    public void createTransmitter(DataSource dataOutput, IConnection connection,
+                                  ICaptureDevice device)
         throws TransmitterException {
 
         // create the RTP Manager
@@ -78,7 +78,8 @@ public class TransmitterFactoryRTPM implements ITransmitterFactory {
             // need to be replaced with your values.
             InetAddress inetAddress = InetAddress.getByName(connection.getIpAddress());
 
-            SessionAddress remoteAddress = new SessionAddress(inetAddress, getPort(connection, device));
+            SessionAddress remoteAddress = new SessionAddress(inetAddress, getPort(connection,
+                device));
 
             // open the connection
             rtpManager.addTarget(remoteAddress);
@@ -131,7 +132,8 @@ public class TransmitterFactoryRTPM implements ITransmitterFactory {
     }
 
     private String buildUrl(IConnection connection, ICaptureDevice device) {
-        return UrlUtil.buildUrl(UrlUtil.RTP, connection.getIpAddress(), getPort(connection, device), device.getDeviceType());
+        return UrlUtil.buildUrl(UrlUtil.RTP, connection.getIpAddress(), getPort(connection, device),
+            device.getDeviceType());
     }
 
     private int getPort(IConnection connection, ICaptureDevice device) {
