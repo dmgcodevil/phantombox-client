@@ -1,5 +1,6 @@
 package com.git.client.webcam.test.sender;
 
+import com.git.client.api.exception.DeviceNotFoundException;
 import com.git.client.api.webcam.datasource.IDataSourceFactory;
 import com.git.client.api.webcam.device.IDeviceManager;
 import com.git.client.api.webcam.locator.IMediaLocatorFactory;
@@ -27,7 +28,7 @@ public class TestApp {
     public static final String DSC = "DirectSoundCapture";
     private static final Logger LOGGER = LoggerFactory.getLogger(TestApp.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws DeviceNotFoundException {
         SenderBuilder senderBuilder = new SenderBuilder();
         ITransmitterFactory transmitterFactory = new TransmitterFactoryDataSink();
         IProcessorFactory processorFactory = new ProcessorFactory();

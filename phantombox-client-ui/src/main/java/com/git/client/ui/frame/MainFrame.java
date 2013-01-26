@@ -104,7 +104,7 @@ public class MainFrame extends JFrame {
         mntmLogout = new JMenuItem("Logout");
 
         mnChat.add(mntmLogout);
-        
+
         separator = new JSeparator();
         mnChat.add(separator);
         mnChat.add(mntmExit);
@@ -115,14 +115,41 @@ public class MainFrame extends JFrame {
         JMenuItem mntmSettings = new JMenuItem("Settings");
         mntmSettings.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
-                //Frame frame = new SettingsFrame();
-                //frame.setVisible(true);
+                JFrame frame = new SettingsFrame();
+                frame.setVisible(true);
             }
         });
 
         mnTools.add(mntmSettings);
 
         JMenu mnAbout = new JMenu("About");
+        JMenuItem mntmInfo = new JMenuItem("Info");
+        mntmInfo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                JOptionPane.showMessageDialog(null,
+                    "    PhantomBox - the service allows users to communicate with peers " +
+                        "\n    by voice using a microphone, video by using a webcam, " +
+                        "\n    and instant messaging over the Internet. " +
+                        "\n\n\n" +
+                        "    PhantomBox  Copyright (C) 2013  Roman Pleshkov\n" +
+                        "    This program is free software: you can redistribute it and/or modify\n" +
+                        "    it under the terms of the GNU General Public License as published by\n" +
+                        "    the Free Software Foundation, either version 3 of the License, or\n" +
+                        "    (at your option) any later version.\n" +
+                        "\n" +
+                        "    This program is distributed in the hope that it will be useful,\n" +
+                        "    but WITHOUT ANY WARRANTY; without even the implied warranty of\n" +
+                        "    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n" +
+                        "    GNU General Public License for more details.\n" +
+                        "\n" +
+                        "    You should have received a copy of the GNU General Public License\n" +
+                        "    along with this program.  If not, see <http://www.gnu.org/licenses/>.",
+                    "About",
+                    JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
+        mnAbout.add(mntmInfo);
         menuBar.add(mnAbout);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));

@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.util.Collections;
 
@@ -39,6 +40,7 @@ import java.util.Collections;
 public class Mediator implements IMediator {
 
     private static final int PORT = 0;
+    private static final int MAX_PORT = 99999;
     @Autowired
     private ICommunication communication;
 
@@ -105,7 +107,7 @@ public class Mediator implements IMediator {
                 throw new UserLoginException("failed generate port", e);
             }
             user.getContact().getConnection().setVideoPort(serverSocket.getLocalPort());
-            user.getContact().getConnection().setAudioPort(serverSocket.getLocalPort());
+            user.getContact().getConnection().setAudioPort(getFreePort(serverSocket.getLocalPort(), MAX_PORT));
             // caution: build selector
             LOGGER.info("CAUTION: build selector: {}={}", CONTACT_ID_PROPERTY, user.getContact().getId());
             jmsExchanger.setContact(user.getContact());
@@ -115,6 +117,7 @@ public class Mediator implements IMediator {
                 .addPropertyValue(user.getContact().getId())
                 .buildSelector());
             mainFrame.refreshContactsList(user.getContacts());
+            mainFrame.setTitle(user.getContact().getName());
         } else {
             throw new UserLoginException("You are not authorized. Try again.");
         }
@@ -262,5 +265,51 @@ public class Mediator implements IMediator {
             authorized = true;
         }
         return authorized;
+    }
+
+    private int getFreePort(int minPort, int maxPort) throws UserLoginException {
+        int port = 0;
+        for (port = minPort + 1; port < maxPort; port++) {
+            if (available(port, minPort, maxPort)) {
+                break;
+            }
+        }
+        return port;
+    }
+
+    /**
+     * Checks to see if a specific port is available.
+     *
+     * @param port the port to check for availability
+     */
+    private static boolean available(int port, int minPort, int maxPort) throws UserLoginException {
+        if (port < minPort || port > maxPort) {
+            throw new IllegalArgumentException("Invalid start port: " + port);
+        }
+
+        ServerSocket ss = null;
+        DatagramSocket ds = null;
+        try {
+            ss = new ServerSocket(port);
+            ss.setReuseAddress(true);
+            ds = new DatagramSocket(port);
+            ds.setReuseAddress(true);
+            return true;
+        } catch (IOException e) {
+        } finally {
+            if (ds != null) {
+                ds.close();
+            }
+
+            if (ss != null) {
+                try {
+                    ss.close();
+                } catch (IOException e) {
+                    throw new UserLoginException("Failed generate ip address", e);
+                }
+            }
+        }
+
+        return false;
     }
 }

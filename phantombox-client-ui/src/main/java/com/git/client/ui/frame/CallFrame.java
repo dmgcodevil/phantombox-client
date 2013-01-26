@@ -55,6 +55,7 @@ public class CallFrame extends JFrame {
         this.mediator = mediator;
         init();
         prepareVideoPlayer(rtpVideo);
+        prepareAudioPlayer(rtpAudio);
         alignment(this);
         setResizable(false);
     }
@@ -150,13 +151,14 @@ public class CallFrame extends JFrame {
             MediaLocator mlr = new MediaLocator(rtpAudio);
             LOGGER.info("create audio player: {}", rtpAudio);
             audioPlayer = Manager.createRealizedPlayer(mlr);
-
-            if (audioPlayer.getVisualComponent() != null) {
+            videoPanel.add("North", audioPlayer.getControlPanelComponent());
+            audioPlayer.start();
+            /*if (audioPlayer.getVisualComponent() != null) {
                 audioPanel.add("Center", audioPlayer.getVisualComponent());
             }
             if (audioPlayer.getControlPanelComponent() != null) {
                 audioPanel.add("South", audioPlayer.getControlPanelComponent());
-            }
+            }*/
         } catch (Exception e) {
             LOGGER.error("Failed create audio player: {}", rtpAudio);
             LOGGER.error(ExceptionUtils.getMessage(e));

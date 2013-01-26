@@ -16,4 +16,6 @@ dependencies {
 	compile('com.git.phantombox:phantombox-broker-api:1.0.0')
     compile('javax.media:jmf:2.1.1e')
     compile('com.google.guava:guava:13.0.1')
+    compile('commons-configuration:commons-configuration:1.6')
+
 }

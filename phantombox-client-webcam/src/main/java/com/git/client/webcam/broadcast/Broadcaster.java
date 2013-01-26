@@ -3,6 +3,7 @@ package com.git.client.webcam.broadcast;
 import com.git.client.api.domain.ICaptureDevice;
 import com.git.client.api.exception.BroadcastException;
 import com.git.client.api.exception.DataSourceCreationException;
+import com.git.client.api.exception.DeviceNotFoundException;
 import com.git.client.api.exception.MediaLocatorCreationException;
 import com.git.client.api.exception.ProcessorCreationException;
 import com.git.client.api.exception.TransmitterException;
@@ -65,7 +66,11 @@ public class Broadcaster implements IBroadcaster {
         this.dataSourceFactory = new DataSourceFactory();
         this.mediaLocatorFactory = new MediaLocatorFactory();
 
-        this.deviceManager.initDevices();
+        try {
+            this.deviceManager.initDevices();
+        } catch (DeviceNotFoundException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /**
@@ -176,8 +181,10 @@ public class Broadcaster implements IBroadcaster {
         ICaptureDevice audioDevice = deviceManager.getAudioDevice();
         LOGGER.info("device {} successfully loaded", audioDevice);
 
-        LOGGER.info("Start video broadcast", audioDevice);
+        LOGGER.info("-------- START VIDEO BROADCAST --------");
         start(videoDevice, connection);
+        LOGGER.info("-------- START AUDIO BROADCAST --------");
+        start(audioDevice, connection);
     }
 
     /**

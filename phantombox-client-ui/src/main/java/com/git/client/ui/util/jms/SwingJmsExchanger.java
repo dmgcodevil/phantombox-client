@@ -47,9 +47,6 @@ public class SwingJmsExchanger extends AbstractJmsExchanger implements ISwingJms
             public void run() {
                 try {
                     broadcaster.start(connection);
-                    LOGGER.info("-------- START VIDEO BROADCAST --------");
-                    // audioSender.start(TransmissionType.AUDIO, DSC, connection.getIpAddress(), connection.getAudioPort());
-                    //  LOGGER.info("-------- START AUDIO BROADCAST --------");
                 } catch (BroadcastException e) {
                     LOGGER.error("-------- FAILED BROADCAST --------");
                     LOGGER.error(ExceptionUtils.getMessage(e));

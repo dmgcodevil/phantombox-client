@@ -1,16 +1,25 @@
 package com.git.client.webcam.device;
 
-import static com.git.domain.api.Constants.DSC;
-import static com.git.domain.api.Constants.JSC;
-import static com.git.domain.api.Constants.VFM_WDM;
+import static com.git.domain.api.Constants.FILE_NAME;
 import com.git.client.api.domain.DeviceType;
 import com.git.client.api.domain.ICaptureDevice;
+import com.git.client.api.domain.IDeviceStatistic;
 import com.git.client.api.exception.DeviceNotFoundException;
+import com.git.client.api.exception.PropertiesException;
 import com.git.client.api.webcam.device.IDeviceManager;
+import com.git.client.api.webcam.device.IPropertiesManager;
 import com.git.client.domain.CaptureDevice;
+import com.git.client.domain.DeviceStatistic;
+import com.git.domain.api.ISetup;
+import com.git.domain.impl.Device;
+import com.git.domain.impl.Setup;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,20 +50,15 @@ public class DeviceManager implements IDeviceManager {
 
     private ICaptureDevice videoDevice;
 
+    private IPropertiesManager propertiesManager = new PropertiesManager();
+
+    private Set<String> videoDevices = new HashSet();
+
+    private Set<String> audioDevices = new HashSet();
+
     private static final Format ALL_DEVICES = null;
 
-    private static final Set<String> DEF_AUDIO_DEVICES = new HashSet();
-
-    private static final Set<String> DEF_VIDEO_DEVICES = new HashSet();
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceManager.class);
-
-    static {
-        DEF_AUDIO_DEVICES.add(JSC);
-        DEF_AUDIO_DEVICES.add(DSC);
-        DEF_VIDEO_DEVICES.add(VFM_WDM);
-    }
-
 
     /**
      * {@inheritDoc}
@@ -88,13 +92,47 @@ public class DeviceManager implements IDeviceManager {
         return videoDevice;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setAudioDevice(String audioDeviceName) throws DeviceNotFoundException {
+        if (devices.containsKey(audioDeviceName)) {
+            this.audioDevice = new CaptureDevice(DeviceType.AUDIO, devices.get(audioDeviceName));
+        } else {
+            throw new DeviceNotFoundException("audio device: " + audioDeviceName + "not found");
+        }
+    }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void initDevices() {
+    public void setVideoDevice(String videoDeviceName) throws DeviceNotFoundException {
+        if (devices.containsKey(videoDeviceName)) {
+            this.videoDevice = new CaptureDevice(DeviceType.VIDEO, devices.get(videoDeviceName));
+        } else {
+            throw new DeviceNotFoundException("video device: " + videoDeviceName + "not found");
+        }
+    }
+
+    public Set<String> getVideoDevices() {
+        return videoDevices;
+    }
+
+    public Set<String> getAudioDevices() {
+        return audioDevices;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    // TODO refactor it !!!
+    public IDeviceStatistic initDevices() throws DeviceNotFoundException {
         devices = new HashMap();
+        videoDevices = new HashSet();
+        audioDevices = new HashSet();
         LOGGER.info("------ Init devices ------");
         Vector deviceListVector = CaptureDeviceManager.getDeviceList(ALL_DEVICES);
         if (CollectionUtils.isNotEmpty(deviceListVector)) {
@@ -102,19 +140,61 @@ public class DeviceManager implements IDeviceManager {
                 if (device instanceof CaptureDeviceInfo) {
                     CaptureDeviceInfo deviceInfo = (CaptureDeviceInfo) device;
                     devices.put(deviceInfo.getName(), deviceInfo);
+                    if (deviceInfo.toString().toLowerCase().contains("sound") ||
+                        deviceInfo.toString().toLowerCase().contains("audio")) {
+                        audioDevices.add(deviceInfo.getName());
+                    } else if (deviceInfo.toString().toLowerCase().contains("video")) {
+                        videoDevices.add(deviceInfo.getName());
+                    }
                 }
             }
 
-            // TODO load current devices from properties
-            if (MapUtils.isNotEmpty(devices)) {
-                if (devices.containsKey(VFM_WDM)) {
-                    videoDevice = new CaptureDevice(DeviceType.VIDEO, devices.get(VFM_WDM));
+            ISetup setup;
+            String aDevice = StringUtils.EMPTY;
+            String vDevice = StringUtils.EMPTY;
+            try {
+                setup = propertiesManager.read(Setup.class, FILE_NAME);
+            } catch (PropertiesException e) {
+                LOGGER.warn(e.getMessage());
+                throw new IllegalStateException(e);
+            }
+
+            Configuration config = null;
+            try {
+                config = new PropertiesConfiguration("device.properties");
+            } catch (ConfigurationException e) {
+                LOGGER.error("FAILED LOAD PROPERTIES");
+                LOGGER.error(ExceptionUtils.getMessage(e));
+            }
+
+            try {
+                if (setup.getAudioDevice() != null &&
+                    StringUtils.isNotEmpty(setup.getAudioDevice().getName())) {
+                    aDevice = setup.getAudioDevice().getName();
+                } else {
+                    aDevice = config.getString("default.audio.device");
+                    setup.setAudioDevice(new Device(aDevice));
+
+                    propertiesManager.save(setup, FILE_NAME);
+
                 }
 
-                if (devices.containsKey(DSC)) {
-                    audioDevice = new CaptureDevice(DeviceType.AUDIO, devices.get(DSC));
+                if (setup.getVideoDevice() != null &&
+                    StringUtils.isNotEmpty(setup.getVideoDevice().getName())) {
+                    vDevice = setup.getVideoDevice().getName();
+                } else {
+                    vDevice = config.getString("default.video.device");
+                    setup.setVideoDevice(new Device(vDevice));
+                    propertiesManager.save(setup, FILE_NAME);
                 }
+
+            } catch (PropertiesException e) {
+                LOGGER.warn(e.getMessage());
             }
+
+
+            setAudioDevice(aDevice);
+            setVideoDevice(vDevice);
 
 
             LOGGER.info("Was found " + deviceListVector.size() + " devices.");
@@ -124,6 +204,7 @@ public class DeviceManager implements IDeviceManager {
         } else {
             LOGGER.info("No one device was found");
         }
+        return new DeviceStatistic(devices.size(), audioDevices.size(), videoDevices.size());
     }
 
     /**
@@ -148,5 +229,4 @@ public class DeviceManager implements IDeviceManager {
         return MessageFormat.format("The device: ''{0}'' not found.",
             (StringUtils.isNotEmpty(device) ? device : StringUtils.EMPTY));
     }
-
 }
