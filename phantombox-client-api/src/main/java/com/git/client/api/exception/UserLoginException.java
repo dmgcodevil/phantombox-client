@@ -1,7 +1,7 @@
-package com.git.client.exception;
+package com.git.client.api.exception;
 
 /**
- * User login exception.
+ * UserLoginException.
  * <p/>
  * User: dmgcodevil
  * Date: 12/7/12
@@ -22,5 +22,15 @@ public class UserLoginException extends Exception {
      */
     public UserLoginException(String message) {
         super(message);
+    }
+
+    /**
+     * Constructor with parameters.
+     *
+     * @param message message
+     * @param cause   {@link Throwable}
+     */
+    public UserLoginException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

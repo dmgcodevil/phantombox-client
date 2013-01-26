@@ -1,7 +1,7 @@
-package com.git.client.exception;
+package com.git.client.api.exception;
 
 /**
- * Class description.
+ * ContactException.
  * <p/>
  * User: dmgcodevil
  * Date: 12/8/12

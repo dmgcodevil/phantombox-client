@@ -1,7 +1,8 @@
 package com.git.client.ui.frame;
 
-import com.git.client.exception.ContactException;
-import com.git.client.exception.UserLoginException;
+
+import com.git.client.api.exception.ContactException;
+import com.git.client.api.exception.UserLoginException;
 import com.git.client.ui.Mediator;
 import com.git.domain.api.IContact;
 import com.jgoodies.forms.factories.FormFactory;

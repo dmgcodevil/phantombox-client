@@ -5,14 +5,21 @@ import com.git.broker.api.domain.IJmsExchanger;
 import com.git.broker.api.domain.ISelectorBuilder;
 import com.git.broker.api.domain.SelectorCondition;
 import com.git.broker.impl.domain.SelectorBuilder;
+import com.git.client.api.exception.CallException;
+import com.git.client.api.exception.ContactException;
+import com.git.client.api.exception.UserLoginException;
 import com.git.client.api.net.ICommunication;
-import com.git.client.exception.CallException;
-import com.git.client.exception.ContactException;
-import com.git.client.exception.UserLoginException;
+import com.git.client.api.ui.IMediator;
+import com.git.client.api.ui.ISwingJmsExchanger;
+import com.git.client.ui.frame.CallFrame;
 import com.git.client.ui.frame.LoginFrame;
 import com.git.client.ui.frame.MainFrame;
+import com.git.client.ui.util.CallFrameManager;
 import com.git.domain.api.IContact;
 import com.git.domain.api.IUser;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,13 +36,14 @@ import java.util.Collections;
  * Time: 7:26 PM
  */
 @Component("mediator")
-public class Mediator {
+public class Mediator implements IMediator {
 
+    private static final int PORT = 0;
     @Autowired
     private ICommunication communication;
 
     @Autowired
-    private IJmsExchanger jmsExchanger;
+    private ISwingJmsExchanger jmsExchanger;
 
     private ISelectorBuilder selectorBuilder = new SelectorBuilder();
 
@@ -45,10 +53,22 @@ public class Mediator {
 
     private LoginFrame loginFrame;
 
+    private CallFrameManager callFrameManager = new CallFrameManager();
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Mediator.class);
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public IUser getUser() {
         return user;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void setUser(IUser user) {
         this.user = user;
     }
@@ -70,22 +90,24 @@ public class Mediator {
     }
 
     /**
-     * Login.
-     *
-     * @param login    login
-     * @param password password
+     * {@inheritDoc}
      */
+    @Override
     public void login(String login, String password) throws UserLoginException {
+        LOGGER.info("login():: login={}, password={}", login, password);
         user = communication.login(login, password);
         if (user != null && user.getContact().isOnline()) {
-            ServerSocket s = null;
+            ServerSocket serverSocket;
             try {
-                s = new ServerSocket(0);
+                serverSocket = new ServerSocket(PORT);
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("failed generate port");
+                throw new UserLoginException("failed generate port", e);
             }
-            user.getContact().getConnection().setVideoPort(s.getLocalPort());
-            user.getContact().getConnection().setAudioPort(s.getLocalPort());
+            user.getContact().getConnection().setVideoPort(serverSocket.getLocalPort());
+            user.getContact().getConnection().setAudioPort(serverSocket.getLocalPort());
+            // caution: build selector
+            LOGGER.info("CAUTION: build selector: {}={}", CONTACT_ID_PROPERTY, user.getContact().getId());
             jmsExchanger.setContact(user.getContact());
             jmsExchanger.setSelector(selectorBuilder.createSelector()
                 .addProperty(CONTACT_ID_PROPERTY)
@@ -99,8 +121,9 @@ public class Mediator {
     }
 
     /**
-     * Logout.
+     * {@inheritDoc}
      */
+    @Override
     public void logout() throws UserLoginException {
         if (checkAuthorized()) {
             boolean res = communication.logout(user.getName(), user.getPassword());
@@ -112,13 +135,16 @@ public class Mediator {
         }
     }
 
+    @Override
+    public IContact getContactById(String contactId) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
 
     /**
-     * Add contact by  name.
-     *
-     * @param name name of contact which need to add
-     * @return {@link IContact}
+     * {@inheritDoc}
      */
+    @Override
     public IContact addContactByName(String name) throws UserLoginException, ContactException {
         IContact contact = null;
         if (checkAuthorized()) {
@@ -136,11 +162,9 @@ public class Mediator {
     }
 
     /**
-     * Add contact by email.
-     *
-     * @param email Email
-     * @return {@link IContact}
+     * {@inheritDoc}
      */
+    @Override
     public IContact addContactByEmail(String email) throws UserLoginException, ContactException {
         IContact contact = null;
         if (checkAuthorized()) {
@@ -158,11 +182,9 @@ public class Mediator {
     }
 
     /**
-     * Remove contact.
-     *
-     * @param contact {@link IContact}
-     * @return true - if operation complete successful
+     * {@inheritDoc}
      */
+    @Override
     public boolean removeContact(IContact contact) {
         boolean removed = false;
         if (user != null) {
@@ -178,11 +200,9 @@ public class Mediator {
     }
 
     /**
-     * Call.
-     *
-     * @param contact {@link IContact}
-     * @throws CallException
+     * {@inheritDoc}
      */
+    @Override
     public void call(final IContact contact) throws CallException {
         IContact repContact = communication.findContactByName(contact.getName());
         if (repContact != null && repContact.isOnline()) {
@@ -198,19 +218,41 @@ public class Mediator {
         }
     }
 
-    // TODO test it
-    public void stopCall(final IContact contact) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void createCallFrame(String rtpVideo, String rtpAudio, IContact contact) {
+        CallFrame callFrame = new CallFrame(rtpVideo, rtpAudio, contact, this);
+        callFrameManager.add(contact, callFrame);
+        callFrame.setVisible(true);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void disposeCallFrame(IContact contact) {
+        CallFrame callFrame = callFrameManager.remove(contact);
+        callFrame.dispose();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void stopCall(final IContact contact) throws CallException {
         IContact repContact = communication.findContactByName(contact.getName());
         if (repContact != null && repContact.isOnline()) {
             Thread callThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    jmsExchanger.stopCall(user.getContact().getConnection(), contact);
+                    jmsExchanger.stopCall(user.getContact(), contact);
                 }
             });
             callThread.start();
         } else {
-            //TODO throw new CallException("Contact '" + contact.getName() + "' offline");
+            throw new CallException("contact {" + contact.getName() + "} not exist or offline");
         }
     }
 

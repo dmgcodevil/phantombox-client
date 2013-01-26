@@ -95,6 +95,7 @@ public class DeviceManager implements IDeviceManager {
     @Override
     public void initDevices() {
         devices = new HashMap();
+        LOGGER.info("------ Init devices ------");
         Vector deviceListVector = CaptureDeviceManager.getDeviceList(ALL_DEVICES);
         if (CollectionUtils.isNotEmpty(deviceListVector)) {
             for (Object device : deviceListVector) {

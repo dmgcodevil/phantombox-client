@@ -1,6 +1,7 @@
 package com.git.client.ui.frame;
 
-import com.git.client.exception.UserLoginException;
+
+import com.git.client.api.exception.UserLoginException;
 import com.git.client.ui.Mediator;
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;

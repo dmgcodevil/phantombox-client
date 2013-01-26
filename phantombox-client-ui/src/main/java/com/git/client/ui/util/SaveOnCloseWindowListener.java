@@ -1,6 +1,6 @@
 package com.git.client.ui.util;
 
-import com.git.client.exception.UserLoginException;
+import com.git.client.api.exception.UserLoginException;
 import com.git.client.ui.Mediator;
 
 import java.awt.event.WindowAdapter;
@@ -27,8 +27,8 @@ public class SaveOnCloseWindowListener extends WindowAdapter {
     public void windowClosing(WindowEvent e) {
         try {
             mediator.logout();
-        } catch (UserLoginException e1) {
-            e1.printStackTrace();
+        } catch (UserLoginException ex) {
+            ex.printStackTrace();
         }
         frame.dispose();
     }

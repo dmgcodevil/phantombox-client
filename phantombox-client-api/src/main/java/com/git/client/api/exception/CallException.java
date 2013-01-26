@@ -1,7 +1,7 @@
-package com.git.client.exception;
+package com.git.client.api.exception;
 
 /**
- * Call exception.
+ * CallException.
  * <p/>
  * User: dmgcodevil
  * Date: 12/14/12

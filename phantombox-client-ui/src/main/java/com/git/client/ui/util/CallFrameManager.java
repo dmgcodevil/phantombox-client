@@ -1,7 +1,7 @@
 package com.git.client.ui.util;
 
 import com.git.client.ui.frame.CallFrame;
-import com.git.domain.api.IConnection;
+import com.git.domain.api.IContact;
 import org.apache.commons.collections.MapUtils;
 
 import java.util.HashMap;
@@ -12,46 +12,48 @@ import java.util.Map;
  */
 public class CallFrameManager {
 
-    private Map<IConnection, CallFrame> callFramesPool;
+    private Map<IContact, CallFrame> callFramesPool;
 
-    public Map<IConnection, CallFrame> getCallFramesPool() {
+    public Map<IContact, CallFrame> getCallFramesPool() {
         return callFramesPool;
     }
 
     /**
      * Add callFrame to pool.
      *
-     * @param connection {@link IConnection}
+     * @param contact {@link IContact}
      * @param callFrame  {@link CallFrame}
      */
-    public void add(IConnection connection, CallFrame callFrame) {
+    public void add(IContact contact, CallFrame callFrame) {
         if (callFramesPool == null) {
             callFramesPool = new HashMap();
         }
-        callFramesPool.put(connection, callFrame);
+        callFramesPool.put(contact, callFrame);
     }
 
     /**
-     * Romove callFrame from pool sby connection.
+     * Romove callFrame from pool sby contact.
      *
-     * @param connection {@link IConnection}
+     * @param contact {@link IContact}
      */
-    public void remove(IConnection connection) {
-        if (MapUtils.isNotEmpty(callFramesPool)) {
-            callFramesPool.remove(connection);
-        }
-    }
-
-    /**
-     * Get callFrame by connection.
-     *
-     * @param connection {@link IConnection}
-     * @return callFrame
-     */
-    public CallFrame get(IConnection connection) {
+    public CallFrame remove(IContact contact) {
         CallFrame callFrame = null;
         if (MapUtils.isNotEmpty(callFramesPool)) {
-            callFrame = callFramesPool.get(connection);
+            callFrame = callFramesPool.remove(contact);
+        }
+        return callFrame;
+    }
+
+    /**
+     * Get callFrame by contact.
+     *
+     * @param contact {@link IContact}
+     * @return callFrame
+     */
+    public CallFrame get(IContact contact) {
+        CallFrame callFrame = null;
+        if (MapUtils.isNotEmpty(callFramesPool)) {
+            callFrame = callFramesPool.get(contact);
         }
         return callFrame;
     }

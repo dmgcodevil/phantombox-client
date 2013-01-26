@@ -47,7 +47,7 @@ public class Broadcaster implements IBroadcaster {
 
     private HashMap<ICaptureDevice, Processor> processorPool = new HashMap();
 
-    private ThreadLocal<Long> countSubscribers = new ThreadLocal();
+    private volatile Long countSubscribers = EMPTY_SUBSCRIBERS;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Broadcaster.class);
 
@@ -66,7 +66,6 @@ public class Broadcaster implements IBroadcaster {
         this.mediaLocatorFactory = new MediaLocatorFactory();
 
         this.deviceManager.initDevices();
-        countSubscribers.set(EMPTY_SUBSCRIBERS);
     }
 
     /**
@@ -211,7 +210,7 @@ public class Broadcaster implements IBroadcaster {
             if (processor != null) {
                 disposeTransmitter(device, connection);
                 processor.stop();
-                countSubscribers.remove();
+                countSubscribers = EMPTY_SUBSCRIBERS;
                 LOGGER.info("Broadcast for device" + device + ", connection: " +
                     connection + " is stopped.");
             } else {
@@ -227,13 +226,16 @@ public class Broadcaster implements IBroadcaster {
      */
     @Override
     public void stop() throws BroadcastException {
-        if (EMPTY_SUBSCRIBERS.equals(countSubscribers.get()) &&
+        LOGGER.info("Broadcaster:: stop()");
+        LOGGER.info("countSubscribers={}", countSubscribers);
+        if (countSubscribers <= 1L &&
             MapUtils.isNotEmpty(processorPool)) {
             try {
-                // try to dispose all transmissions
+                LOGGER.info("try to dispose all transmissions", countSubscribers);
                 transmitterFactory.disposeTransmitter();
 
                 for (Processor processor : processorPool.values()) {
+                    LOGGER.info("try to stop processor = {}", processor);
                     processor.stop();
                 }
             } catch (TransmitterException e) {
@@ -289,16 +291,16 @@ public class Broadcaster implements IBroadcaster {
     }
 
     private synchronized void addSubscriber() {
-        Long currentCount = countSubscribers.get();
-        currentCount++;
-        countSubscribers.set(currentCount);
+
+        countSubscribers++;
+
     }
 
     private synchronized void removeSubscriber() {
-        Long currentCount = countSubscribers.get();
-        if (currentCount > EMPTY_SUBSCRIBERS) {
-            currentCount--;
+
+        if (countSubscribers > EMPTY_SUBSCRIBERS) {
+            countSubscribers--;
         }
-        countSubscribers.set(currentCount);
+
     }
 }

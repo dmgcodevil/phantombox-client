@@ -8,6 +8,8 @@ import com.git.client.api.webcam.transmitter.ITransmitterFactory;
 import com.git.client.webcam.util.UrlUtil;
 import com.git.domain.api.IConnection;
 import org.apache.commons.collections.MapUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -29,6 +31,8 @@ public class TransmitterFactoryDataSink implements ITransmitterFactory {
 
 
     private Map<String, DataSink> dataSinkMap = new HashMap();
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransmitterFactoryDataSink.class);
 
     /**
      * {@inheritDoc}
@@ -89,9 +93,12 @@ public class TransmitterFactoryDataSink implements ITransmitterFactory {
      */
     @Override
     public void disposeTransmitter() throws TransmitterException {
+        LOGGER.info("TransmitterFactoryDataSink:: disposeTransmitter()");
         if (MapUtils.isNotEmpty(dataSinkMap)) {
+            LOGGER.info("dataSinkMap size =  {}", dataSinkMap.size());
             for (Map.Entry<String, DataSink> sinkEntry : dataSinkMap.entrySet()) {
                 try {
+                    LOGGER.info("try to stop =  {}", sinkEntry.getValue());
                     sinkEntry.getValue().stop();
                 } catch (IOException e) {
                     throw new TransmitterException("Failed stop transmitter for: " +

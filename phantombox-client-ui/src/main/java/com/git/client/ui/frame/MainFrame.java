@@ -1,6 +1,6 @@
 package com.git.client.ui.frame;
 
-import com.git.client.exception.UserLoginException;
+import com.git.client.api.exception.UserLoginException;
 import com.git.client.ui.Mediator;
 import com.git.client.ui.panel.JContact;
 import com.git.domain.api.IContact;

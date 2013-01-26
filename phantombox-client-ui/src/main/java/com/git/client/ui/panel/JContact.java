@@ -1,6 +1,7 @@
 package com.git.client.ui.panel;
 
-import com.git.client.exception.CallException;
+
+import com.git.client.api.exception.CallException;
 import com.git.client.ui.Mediator;
 import com.git.domain.api.IContact;
 import com.jgoodies.forms.factories.FormFactory;
