@@ -21,7 +21,7 @@ public interface ISwingJmsExchanger extends IJmsExchanger {
     IMediator getMediator();
 
     /**
-     * Sets  mediator
+     * Sets  mediator.
      *
      * @param mediator mediator.
      */

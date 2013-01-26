@@ -7,7 +7,7 @@ import com.git.domain.api.IContact;
 import com.git.domain.api.IUser;
 
 /**
- * Enter class description.
+ * IMediator interface.
  * <p/>
  * Date: 1/25/13
  * Time: 11:56 PM
@@ -26,7 +26,7 @@ public interface IMediator {
     /**
      * Sets user.
      *
-     * @return user
+     * @param user user
      */
     void setUser(IUser user);
 

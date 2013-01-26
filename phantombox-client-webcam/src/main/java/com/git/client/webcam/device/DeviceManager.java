@@ -14,7 +14,6 @@ import com.git.domain.api.ISetup;
 import com.git.domain.impl.Device;
 import com.git.domain.impl.Setup;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -43,7 +42,6 @@ import javax.media.Format;
  */
 public class DeviceManager implements IDeviceManager {
 
-
     private Map<String, CaptureDeviceInfo> devices;
 
     private ICaptureDevice audioDevice;
@@ -59,6 +57,10 @@ public class DeviceManager implements IDeviceManager {
     private static final Format ALL_DEVICES = null;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceManager.class);
+
+    private static final String DEFAULT_AUDIO_DEVICE = "default.audio.device";
+
+    private static final String DEFAULT_VIDEO_DEVICE = "default.video.device";
 
     /**
      * {@inheritDoc}
@@ -128,8 +130,60 @@ public class DeviceManager implements IDeviceManager {
      * {@inheritDoc}
      */
     @Override
-    // TODO refactor it !!!
     public IDeviceStatistic initDevices() throws DeviceNotFoundException {
+        String aDevice = StringUtils.EMPTY;
+        String vDevice = StringUtils.EMPTY;
+        loadDevices();
+        ISetup setup = loadSetup();
+        Configuration config = loadConfig();
+
+        try {
+            if (setup.getAudioDevice() != null &&
+                StringUtils.isNotEmpty(setup.getAudioDevice().getName())) {
+                aDevice = setup.getAudioDevice().getName();
+            } else {
+                aDevice = config.getString(DEFAULT_AUDIO_DEVICE);
+                setup.setAudioDevice(new Device(aDevice));
+
+                propertiesManager.save(setup, FILE_NAME);
+
+            }
+
+            if (setup.getVideoDevice() != null &&
+                StringUtils.isNotEmpty(setup.getVideoDevice().getName())) {
+                vDevice = setup.getVideoDevice().getName();
+            } else {
+                vDevice = config.getString(DEFAULT_VIDEO_DEVICE);
+                setup.setVideoDevice(new Device(vDevice));
+                propertiesManager.save(setup, FILE_NAME);
+            }
+
+        } catch (PropertiesException e) {
+            LOGGER.warn(e.getMessage());
+        }
+
+
+        setAudioDevice(aDevice);
+        setVideoDevice(vDevice);
+
+
+        LOGGER.info("Was found " + devices.size() + " devices.");
+        LOGGER.info(audioDevice + " current audio device.");
+        LOGGER.info(videoDevice + " current video device.");
+
+
+        return new DeviceStatistic(devices.size(), audioDevices.size(), videoDevices.size());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CaptureDeviceInfo getCaptureDeviceInfo(String device) throws DeviceNotFoundException {
+        return getDevice(device);
+    }
+
+    private void loadDevices() throws DeviceNotFoundException {
         devices = new HashMap();
         videoDevices = new HashSet();
         audioDevices = new HashSet();
@@ -148,71 +202,31 @@ public class DeviceManager implements IDeviceManager {
                     }
                 }
             }
-
-            ISetup setup;
-            String aDevice = StringUtils.EMPTY;
-            String vDevice = StringUtils.EMPTY;
-            try {
-                setup = propertiesManager.read(Setup.class, FILE_NAME);
-            } catch (PropertiesException e) {
-                LOGGER.warn(e.getMessage());
-                throw new IllegalStateException(e);
-            }
-
-            Configuration config = null;
-            try {
-                config = new PropertiesConfiguration("device.properties");
-            } catch (ConfigurationException e) {
-                LOGGER.error("FAILED LOAD PROPERTIES");
-                LOGGER.error(ExceptionUtils.getMessage(e));
-            }
-
-            try {
-                if (setup.getAudioDevice() != null &&
-                    StringUtils.isNotEmpty(setup.getAudioDevice().getName())) {
-                    aDevice = setup.getAudioDevice().getName();
-                } else {
-                    aDevice = config.getString("default.audio.device");
-                    setup.setAudioDevice(new Device(aDevice));
-
-                    propertiesManager.save(setup, FILE_NAME);
-
-                }
-
-                if (setup.getVideoDevice() != null &&
-                    StringUtils.isNotEmpty(setup.getVideoDevice().getName())) {
-                    vDevice = setup.getVideoDevice().getName();
-                } else {
-                    vDevice = config.getString("default.video.device");
-                    setup.setVideoDevice(new Device(vDevice));
-                    propertiesManager.save(setup, FILE_NAME);
-                }
-
-            } catch (PropertiesException e) {
-                LOGGER.warn(e.getMessage());
-            }
-
-
-            setAudioDevice(aDevice);
-            setVideoDevice(vDevice);
-
-
-            LOGGER.info("Was found " + deviceListVector.size() + " devices.");
-            LOGGER.info(audioDevice + " current audio device.");
-            LOGGER.info(videoDevice + " current video device.");
-
         } else {
-            LOGGER.info("No one device was found");
+            throw new DeviceNotFoundException("No one device was found");
         }
-        return new DeviceStatistic(devices.size(), audioDevices.size(), videoDevices.size());
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public CaptureDeviceInfo getCaptureDeviceInfo(String device) throws DeviceNotFoundException {
-        return getDevice(device);
+    private ISetup loadSetup() {
+        ISetup setup;
+        try {
+            setup = propertiesManager.read(Setup.class, FILE_NAME);
+        } catch (PropertiesException e) {
+            LOGGER.warn(e.getMessage());
+            throw new IllegalStateException(e);
+        }
+        return setup;
+    }
+
+    private Configuration loadConfig() {
+        Configuration config = null;
+        try {
+            config = new PropertiesConfiguration("device.properties");
+        } catch (ConfigurationException e) {
+            LOGGER.error("FAILED LOAD PROPERTIES");
+            LOGGER.error(ExceptionUtils.getMessage(e));
+        }
+        return config;
     }
 
     private CaptureDeviceInfo getDevice(String device) throws DeviceNotFoundException {

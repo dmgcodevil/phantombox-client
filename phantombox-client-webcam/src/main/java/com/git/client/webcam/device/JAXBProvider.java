@@ -17,7 +17,7 @@ import javax.xml.bind.Unmarshaller;
 public class JAXBProvider {
 
     private JAXBProvider() {
-        throw new AssertionError();
+        throw new IllegalAccessError();
     }
 
     /**
@@ -26,7 +26,7 @@ public class JAXBProvider {
      * @param obj      object
      * @param fileName file name
      * @param <T>      type
-     * @throws {@link JAXBException}
+     * @throws JAXBException {@link JAXBException}
      */
     public static <T> void create(T obj, String fileName) throws JAXBException {
         JAXBContext jaxbContext = JAXBContext.newInstance(obj.getClass());
@@ -42,8 +42,8 @@ public class JAXBProvider {
      * @param filename file name
      * @param <T>      type
      * @return object
-     * @throws {@link IOException}
-     * @throws {@link JAXBException}
+     * @throws IOException   {@link IOException}
+     * @throws JAXBException {@link JAXBException}
      */
     public static <T> T read(Class cl, String filename) throws IOException, JAXBException {
         T obj = null;
@@ -63,28 +63,32 @@ public class JAXBProvider {
      * Delete file properties.
      *
      * @param filename file name
-     * @throws {@link IllegalArgumentException}
+     * @throws IllegalArgumentException {@link IllegalArgumentException}
      */
     public static void delete(String filename) throws IllegalArgumentException {
         File f = new File(filename);
 
-        if (!f.exists())
+        if (!f.exists()) {
             throw new IllegalArgumentException(
                 "Delete: no such file or directory: " + filename);
+        }
 
-        if (!f.canWrite())
+        if (!f.canWrite()) {
             throw new IllegalArgumentException("Delete: write protected: "
                 + filename);
+        }
 
         if (f.isDirectory()) {
             String[] files = f.list();
-            if (files.length > 0)
+            if (files.length > 0) {
                 throw new IllegalArgumentException(
                     "Delete: directory not empty: " + filename);
+            }
         }
 
         boolean success = f.delete();
-        if (!success)
+        if (!success) {
             throw new IllegalArgumentException("Delete: deletion failed");
+        }
     }
 }
