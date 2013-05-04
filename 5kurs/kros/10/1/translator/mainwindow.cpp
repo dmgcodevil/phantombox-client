@@ -14,6 +14,17 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::on_testBtn_clicked()
+{
+//    Library *library = new Library;
+//    library->add(QString("hello"),  QString("??????"));
+//    library->add(QString("hello1"),  QString("??????1"));
+//    library->printTranslationMap(ui->engRuListWidget);
+//    ui->libraryTable->insertRow(2);
+//    ui->testLbl->setText(library->find("hello"));
+}
+
+
 void MainWindow::on_addTranslationBtn_clicked()
 {
   library->add(ui->sourceEdit->text(), ui->translationEdit->text());
@@ -67,4 +78,5 @@ void MainWindow::on_libraryTable_clicked(const QModelIndex &index)
     QString transcription = ui->libraryTable->model()->data(ui->libraryTable->model()->index(row,1)).toString();
     ui->sourceEdit->setText(source);
     ui->translationEdit->setText(transcription);
+
 }
