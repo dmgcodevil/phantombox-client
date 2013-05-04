@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<setup>
+    <audioDevice>
+        <name>JavaSound audio capture</name>
+    </audioDevice>
+    <videoDevice>
+        <name>vfw:Microsoft WDM Image Capture (Win32):0</name>
+    </videoDevice>
+</setup>
