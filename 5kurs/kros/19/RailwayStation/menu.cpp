@@ -4,6 +4,7 @@
 Menu::Menu()
 {
     trainHolder = new TrainHolder();
+    console = new Console();
 }
 
 void Menu::addTrain(){
@@ -15,10 +16,9 @@ void Menu::addTrain(){
 }
 
 void Menu::printTrains(){
-
+    QString test = console->readLine("enter text: ");
+    console->print("your text:", test);
     printTrains(*trainHolder->getTrains());
-
-
 }
 
 void Menu::printTrains(QSet<Train> trains){

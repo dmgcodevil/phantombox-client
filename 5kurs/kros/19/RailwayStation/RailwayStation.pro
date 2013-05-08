@@ -18,9 +18,11 @@ TEMPLATE = app
 SOURCES += main.cpp \
     ./train.cpp \
     trainholder.cpp \
-    menu.cpp
+    menu.cpp \
+    console.cpp
 
 HEADERS += \
     ./train.h \
     trainholder.h \
-    menu.h
+    menu.h \
+    console.h

@@ -9,6 +9,6 @@ int main(int argc, char *argv[])
     Menu *menu = new Menu();
     menu->addTrain();
     menu->printTrains();
-    //std::cout << train->toString().toStdString().data()<< std::endl;
+
     return a.exec();
 }

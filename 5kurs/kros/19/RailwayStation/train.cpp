@@ -4,7 +4,7 @@ Train::Train()
 {
 }
 
-QString Train::getStart(){
+QString Train::getStart() const {
     return start;
 }
 
@@ -12,25 +12,21 @@ void Train::setStart(QString start){
     this->start = start;
 }
 
-QString Train::getDestination(){
+QString Train::getDestination() const {
     return destination;
 }
 
-void Train::setDestination(QString destination){
+void Train::setDestination(QString destination) {
     this->destination = destination;
 }
 
-int Train::getNumber(){
+int Train::getNumber() const {
     return number;
 }
 
-void Train::setNumber(int number){
+void Train::setNumber(int number) {
     this->number = number;
 }
-template<typename T> uint Train::qHash( const Train &key )
-    {
-       return ::qHash( "fuck" );
-    }
 
 QString Train::toString(){
     return QString("start=%1, destination=%2, number=%3")
@@ -38,3 +34,4 @@ QString Train::toString(){
             .arg(destination)
             .arg(number);
 }
+
